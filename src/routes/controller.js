@@ -3,11 +3,15 @@
 //mongodb user model
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+const SECRET_KEY = process.env.SECRET_KEY;
 
 var nameRegex = /^[가-힣a-zA-Z0-9]{2,8}/i;
 var emailRegex = /^[\w\.]+@[\w](\.?[\w])*\.[a-z]{2,3}$/i;
 var passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*\W).{8,16}$/i;
-
+var accessTokenOptions = { expiresIn: '14d', subject: 'userInfo' };
 const account = {
   signup: async (req, res) => {
     let { name, email, password } = req.body;
@@ -90,7 +94,69 @@ const account = {
         });
     }
   },
-  signin: async (req, res) => {},
+
+  signin: async (req, res) => {
+    let { email, password } = req.body;
+    email = email.trim();
+    password = password.trim();
+
+    if (email == '' || password == '') {
+      res.json({
+        status: 'FAILED',
+        message: '빈 문자열입니다.',
+      });
+    } else {
+      User.find({ email })
+        .then((data) => {
+          if (data.length) {
+            // 가입된 사용자
+            const accessToken = jwt.sign(
+              {
+                _id: data[0]._id,
+                name: data[0].name,
+              },
+              SECRET_KEY,
+              accessTokenOptions,
+            );
+            const hashedPassword = data[0].password;
+            bcrypt
+              .compare(password, hashedPassword)
+              .then((result) => {
+                if (result) {
+                  // 비밀번호 일치
+                  res.json({
+                    status: 'SUCCESS',
+                    message: '로그인에 성공했습니다.',
+                    accessToken: accessToken,
+                  });
+                } else {
+                  res.json({
+                    status: 'FAILED',
+                    message: '올바르지 않은 비밀번호입니다.',
+                  });
+                }
+              })
+              .catch((err) => {
+                res.json({
+                  status: 'FAILED',
+                  message: '비밀번호 확인 중 에러가 발생하였습니다.',
+                });
+              });
+          } else {
+            res.json({
+              status: 'FAILED',
+              message: '가입하지 않은 사용자입니다.',
+            });
+          }
+        })
+        .catch((err) => {
+          res.json({
+            status: 'FAILED',
+            message: '사용자가 존재하는지 확인 중 에러가 발생하였습니다.',
+          });
+        });
+    }
+  },
 };
 
 module.exports = {
