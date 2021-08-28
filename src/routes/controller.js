@@ -12,6 +12,13 @@ var nameRegex = /^[가-힣a-zA-Z0-9]{2,8}/i;
 var emailRegex = /^[\w\.]+@[\w](\.?[\w])*\.[a-z]{2,3}$/i;
 var passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*\W).{8,16}$/i;
 var accessTokenOptions = { expiresIn: '14d', subject: 'userInfo' };
+
+toJson = (message, status = false) =>
+  this.json({
+    status: status ? 'SUCCESS' : 'FAILED',
+    message: message,
+  });
+
 const account = {
   signup: async (req, res) => {
     let { name, email, password } = req.body;
@@ -155,6 +162,159 @@ const account = {
             message: '사용자가 존재하는지 확인 중 에러가 발생하였습니다.',
           });
         });
+    }
+  },
+
+  findPwd: async (req, res) => {
+    let { email, password } = req.body;
+    email = email.trim();
+    password = password.trim();
+    if (!email || !password) {
+      toJson.bind(res)('빈 문자열입니다.');
+    } else {
+      User.find({ email })
+        .then((data) => {
+          if (data.length) {
+            // 가입된 사용자
+            const accessToken = jwt.sign(
+              {
+                _id: data[0]._id,
+                name: data[0].name,
+              },
+              SECRET_KEY,
+              accessTokenOptions,
+            );
+            const hashedPassword = data[0].password;
+            bcrypt
+              .compare(password, hashedPassword)
+              .then((result) => {
+                if (result) {
+                  // 비밀번호 일치
+                  res.json({
+                    status: 'SUCCESS',
+                    message: '로그인에 성공했습니다.',
+                    accessToken: accessToken,
+                  });
+                } else {
+                  res.json({
+                    status: 'FAILED',
+                    message: '올바르지 않은 비밀번호입니다.',
+                  });
+                }
+              })
+              .catch((err) => {
+                res.json({
+                  status: 'FAILED',
+                  message: '비밀번호 확인 중 에러가 발생하였습니다.',
+                });
+              });
+          } else {
+            res.json({
+              status: 'FAILED',
+              message: '가입하지 않은 사용자입니다.',
+            });
+          }
+        })
+        .catch((err) => {
+          res.json({
+            status: 'FAILED',
+            message: '사용자가 존재하는지 확인 중 에러가 발생하였습니다.',
+          });
+        });
+    }
+  },
+
+  // withDrawal: async (req, res) => {
+  //   let { email } = req.body;
+  //   email = email.trim();
+
+  //   if (email === '') {
+  //     res.json({
+  //       status: 'FAILED',
+  //       message: '빈 문자열입니다.',
+  //     });
+  //   } else if (!emailRegex.test(email)) {
+  //     res.json({
+  //       status: 'FAILED',
+  //       message: '올바르지 않은 양식입니다.',
+  //     });
+  //   } else {
+  //     User.find({ email })
+  //       .then((data) => {
+  //         if (data.length) {
+  //           const hashedPassword = data[0].password;
+  //           bcrypt
+  //             .compare(password, hashedPassword)
+  //             .then((result) => {
+  //               if (result) {
+  //                 // 비밀번호 일치
+  //                 res.json({
+  //                   status: 'SUCCESS',
+  //                   message: '로그인에 성공했습니다.',
+  //                   accessToken: accessToken,
+  //                 });
+  //               } else {
+  //                 res.json({
+  //                   status: 'FAILED',
+  //                   message: '올바르지 않은 비밀번호입니다.',
+  //                 });
+  //               }
+  //             })
+  //             .catch((err) => {
+  //               res.json({
+  //                 status: 'FAILED',
+  //                 message: '비밀번호 확인 중 에러가 발생하였습니다.',
+  //               });
+  //             });
+  //         } else {
+  //           res.json({
+  //             status: 'FAILED',
+  //             message: '가입하지 않은 사용자입니다.',
+  //           });
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         res.json({
+  //           status: 'FAILED',
+  //           message: '사용자가 존재하는지 확인 중 에러가 발생하였습니다.',
+  //         });
+  //       });
+  //   }
+  // },
+
+  checkEmail: async (req, res) => {
+    let { email } = req.body;
+    email = email.trim();
+    if (email === '') {
+      toJson.bind(res)('빈 문자열입니다.');
+    } else if (!emailRegex.test(email)) {
+      toJson.bind(res)('올바르지 않은 양식입니다.');
+    } else {
+      User.find({ email })
+        .then((data) =>
+          data.length
+            ? toJson.bind(res)('이미 가입된 이메일입니다.')
+            : toJson.bind(res)('사용가능한 이메일입니다.', true),
+        )
+        .catch((err) => {});
+    }
+  },
+
+  checkName: async (req, res) => {
+    let { name } = req.body;
+    name = name.trim();
+    if (name === '') {
+      toJson.bind(res)('빈 문자열입니다.');
+    } else if (!nameRegex.test(name)) {
+      toJson.bind(res)('올바르지 않은 양식입니다.');
+    } else {
+      User.find({ name })
+        .then((data) =>
+          data.length
+            ? toJson.bind(res)('이미 사용중인 닉네임입니다.')
+            : toJson.bind(res)('사용가능한 닉네임입니다.', true),
+        )
+        .catch((err) => {});
     }
   },
 };
