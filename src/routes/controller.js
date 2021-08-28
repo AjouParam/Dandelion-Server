@@ -13,7 +13,7 @@ var emailRegex = /^[\w\.]+@[\w](\.?[\w])*\.[a-z]{2,3}$/i;
 var passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*\W).{8,16}$/i;
 var accessTokenOptions = { expiresIn: '14d', subject: 'userInfo' };
 const account = {
-  signup: async (req, res) => {
+  signUp: async (req, res) => {
     let { name, email, password } = req.body;
     name = name.trim();
     email = email.trim();
@@ -95,7 +95,7 @@ const account = {
     }
   },
 
-  signin: async (req, res) => {
+  signIn: async (req, res) => {
     let { email, password } = req.body;
     email = email.trim();
     password = password.trim();

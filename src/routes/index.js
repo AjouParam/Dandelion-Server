@@ -5,8 +5,8 @@ const router = express.Router();
 const ctrl = require('./controller');
 
 //account
-router.post('/account/signup', ctrl.account.signup);
-router.post('/account/signin', ctrl.account.signin);
+router.post('/account/signUp', ctrl.account.signUp);
+router.post('/account/signIn', ctrl.account.signIn);
 //router.post("/login", ctrl.account.login);
 //닉네임 중복 검사 필요
 
