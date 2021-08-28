@@ -8,7 +8,7 @@ const verifyToken = require('./middlewares');
 router.post('/account/signUp', ctrl.account.signUp);
 router.post('/account/signIn', ctrl.account.signIn);
 router.get('/test', verifyToken, (req, res) => {
-  res.json(req.user);
+  res.json(req.decoded);
 });
 //router.post("/login", ctrl.account.login);
 //닉네임 중복 검사 필요

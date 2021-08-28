@@ -7,9 +7,9 @@ const verifyToken = (req, res, next) => {
     const accessToken = req.headers['x-access-token'] || req.body.token || req.query.token;
     //클라이언트에서 어떤 방법으로 보낼지 결정해야할듯
     if (!accessToken) {
-      return res.status(403).json({ status: 'FAILED', message: '사용자 인증을 위한 토큰이 존재하지 않습니다.' });
+      return res.status(403).json({ status: 'FAILED', message: '인증을 위한 토큰이 존재하지 않습니다.' });
     }
-    req.user = jwt.verify(accessToken, SECRET_KEY);
+    req.decoded = jwt.verify(accessToken, SECRET_KEY);
     return next();
   } catch (error) {
     if (error.name == 'TokenExpiredError') {
