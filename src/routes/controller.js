@@ -114,6 +114,7 @@ const account = {
               {
                 _id: data[0]._id,
                 name: data[0].name,
+                email: data[0].email,
               },
               SECRET_KEY,
               accessTokenOptions,
