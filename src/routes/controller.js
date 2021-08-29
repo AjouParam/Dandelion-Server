@@ -1,6 +1,7 @@
 'use strict';
 
 //mongodb user model
+const Verify = require('../email/VerifyEmail');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -217,6 +218,32 @@ const account = {
   },
 };
 
+const email = {
+  sendEmail: async (req, res) => {
+    let { email } = req.body;
+    email = email.trim();
+    if (email === '') toJson.bind(res)('빈 문자열입니다.');
+    else if (!emailRegex.test(email)) toJson.bind(res)('올바르지 않은 양식입니다.');
+    else {
+      User.find({ email })
+        .then((data) => {
+          if (data.length) {
+            Verify.sendGmail({
+              toEmail: email,
+              subject: `안녕하세요. ${data[0].name}님 민들레입니다.`,
+              text: data[0].password.slice(-4),
+            });
+            toJson.bind(res)('굳', true);
+          } else {
+            toJson.bind(res)('없는데?');
+          }
+        })
+        .catch((err) => {});
+    }
+  },
+};
+
 module.exports = {
   account,
+  email,
 };
