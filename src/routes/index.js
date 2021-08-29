@@ -5,8 +5,8 @@ const router = express.Router();
 const ctrl = require('./controller');
 const verifyToken = require('./middlewares');
 //account
-router.post('/account/signup', ctrl.account.signup);
-router.post('/account/signin', ctrl.account.signin);
+router.post('/account/signUp', ctrl.account.signUp);
+router.post('/account/signIn', ctrl.account.signIn);
 router.post('/account/resetPwd', ctrl.account.resetPwd);
 // router.post('/account/withdrawal', ctrl.account.withDrawal);
 router.get('/test', verifyToken, (req, res) => {
