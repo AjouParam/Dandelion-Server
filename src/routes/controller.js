@@ -127,6 +127,22 @@ const account = {
     }
   },
 
+  verifyCode: async (req, res) => {
+    let { email, verifyCode } = req.body;
+    email = email.trim();
+    verifyCode = verifyCode.trim();
+    if (!email) toJson.bind(res)('빈 문자열입니다.');
+    else {
+      User.find({ email }).then((data) => {
+        if (data.length) {
+          verifyCode === data[0].password.slice(-4)
+            ? toJson.bind(res)('인증 통과.', true)
+            : toJson.bind(res)('인증코드가 맞지 않습니다.');
+        } else toJson.bind(res)('존재하지 않는 사용자입니다.');
+      });
+    }
+  },
+
   // withDrawal: async (req, res) => {
   //   let { email } = req.body;
   //   email = email.trim();
