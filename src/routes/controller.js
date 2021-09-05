@@ -1,6 +1,6 @@
 'use strict';
-
 //mongodb user model
+const { OAuth2Client } = require('google-auth-library');
 const Verify = require('../email/VerifyEmail');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
@@ -143,63 +143,50 @@ const account = {
     }
   },
 
-  // withDrawal: async (req, res) => {
-  //   let { email } = req.body;
-  //   email = email.trim();
+  googleSignIn: async (req, res) => {
+    let { idToken } = req.body;
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    let { email, given_name } = ticket.getPayload();
 
-  //   if (email === '') {
-  //     res.json({
-  //       status: 'FAILED',
-  //       message: '빈 문자열입니다.',
-  //     });
-  //   } else if (!emailRegex.test(email)) {
-  //     res.json({
-  //       status: 'FAILED',
-  //       message: '올바르지 않은 양식입니다.',
-  //     });
-  //   } else {
-  //     User.find({ email })
-  //       .then((data) => {
-  //         if (data.length) {
-  //           const hashedPassword = data[0].password;
-  //           bcrypt
-  //             .compare(password, hashedPassword)
-  //             .then((result) => {
-  //               if (result) {
-  //                 // 비밀번호 일치
-  //                 res.json({
-  //                   status: 'SUCCESS',
-  //                   message: '로그인에 성공했습니다.',
-  //                   accessToken: accessToken,
-  //                 });
-  //               } else {
-  //                 res.json({
-  //                   status: 'FAILED',
-  //                   message: '올바르지 않은 비밀번호입니다.',
-  //                 });
-  //               }
-  //             })
-  //             .catch((err) => {
-  //               res.json({
-  //                 status: 'FAILED',
-  //                 message: '비밀번호 확인 중 에러가 발생하였습니다.',
-  //               });
-  //             });
-  //         } else {
-  //           res.json({
-  //             status: 'FAILED',
-  //             message: '가입하지 않은 사용자입니다.',
-  //           });
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         res.json({
-  //           status: 'FAILED',
-  //           message: '사용자가 존재하는지 확인 중 에러가 발생하였습니다.',
-  //         });
-  //       });
-  //   }
-  // },
+    User.find({ email, type: 1 }).then((data) => {
+      if (data.length) {
+        const accessToken = jwt.sign(
+          {
+            _id: data[0]._id,
+            name: data[0].name,
+            email: data[0].email,
+          },
+          SECRET_KEY,
+          accessTokenOptions,
+        );
+        toJson.bind(res)('로그인에 성공했습니다.', true, { accessToken: accessToken });
+      } else {
+        const newUser = new User({
+          name: given_name,
+          email,
+          type: 1,
+        });
+        newUser.save().then((result) => {
+          User.find({ email, type: 1 }).then((data) => {
+            const accessToken = jwt.sign(
+              {
+                _id: data[0]._id,
+                name: data[0].name,
+                email: data[0].email,
+              },
+              SECRET_KEY,
+              accessTokenOptions,
+            );
+            toJson.bind(res)('회원가입 및 로그인에 성공했습니다.', true, { accessToken: accessToken });
+          });
+        });
+      }
+    });
+  },
 
   checkEmail: async (req, res) => {
     let { email } = req.body;

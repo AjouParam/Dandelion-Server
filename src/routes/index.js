@@ -10,6 +10,7 @@ router.post('/account/signUp', ctrl.account.signUp);
 router.post('/account/signIn', ctrl.account.signIn);
 router.post('/account/resetPwd', ctrl.account.resetPwd);
 router.post('/account/verifyCode', ctrl.account.verifyCode);
+router.post('/account/google', ctrl.account.googleSignIn);
 // router.post('/account/withdrawal', ctrl.account.withDrawal);
 router.get('/test', verifyToken, (req, res) => {
   res.json(req.decoded);
