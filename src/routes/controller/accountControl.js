@@ -1,10 +1,12 @@
 'use strict';
 //mongodb user model
 const { OAuth2Client } = require('google-auth-library');
-const Verify = require('../email/VerifyEmail');
-const User = require('../models/User');
+const Verify = require('../provider/verifyEmail');
+const User = require('../../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { basickResponse } = require('../../config/response');
+const { resultResponse } = require('../../config/response');
 require('dotenv').config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -15,16 +17,6 @@ let emailRegex = /^[\w\.]+@[\w](\.?[\w])*\.[a-z]{2,3}$/i;
 let passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*\W).{8,16}$/i;
 let accessTokenOptions = { expiresIn: '14d', subject: 'userInfo' };
 
-function toJson(message, status = false, data = {}) {
-  this.json({
-    ...{
-      status: status ? 'SUCCESS' : 'FAILED',
-      message: message,
-    },
-    ...data,
-  });
-}
-
 const account = {
   signUp: async (req, res) => {
     let { name, email, password } = req.body;
@@ -32,16 +24,18 @@ const account = {
     email = email.trim();
     password = password.trim();
 
-    if (name == '' || email == '' || password == '') toJson.bind(res)('빈 문자열입니다.');
-    else if (!nameRegex.test(name)) toJson.bind(res)('영어, 한글, 숫자만 허용하며, 2자 이상 8자 이내여야 합니다.');
-    else if (!emailRegex.test(email)) toJson.bind(res)('올바르지 않은 양식입니다.');
-    else if (!passwordRegex.test(password)) toJson.bind(res)('영어, 숫자, 특수문자 혼용 8자 이상이어야 합니다.');
+    if (name == '' || email == '' || password == '') res.json(basickResponse('빈 문자열입니다.'));
+    else if (!nameRegex.test(name))
+      res.json(basickResponse('영어, 한글, 숫자만 허용하며, 2자 이상 8자 이내여야 합니다.'));
+    else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
+    else if (!passwordRegex.test(password))
+      res.json(basickResponse('영어, 숫자, 특수문자 혼용 8자 이상이어야 합니다.'));
     else {
       // 이미 가입된 user인지 확인
       User.find({ email })
         .then((result) => {
           //이미 가입된 user가 있음.
-          if (result.length) toJson.bind(res)('이미 가입된 사용자입니다.');
+          if (result.length) res.json(basickResponse('이미 가입된 사용자입니다.'));
           else {
             // user 생성
             // password handling
@@ -55,15 +49,17 @@ const account = {
                 });
                 newUser
                   .save()
-                  .then((result) => toJson.bind(res)('회원가입이 성공적으로 완료되었습니다.', true, { data: result }))
-                  .catch((err) => toJson.bind(res)('회원가입 중 에러가 발생하였습니다.'));
+                  .then((result) =>
+                    res.json(resultResponse('회원가입이 성공적으로 완료되었습니다.', true, { data: result })),
+                  )
+                  .catch((err) => res.json(basickResponse('회원가입 중 에러가 발생하였습니다.')));
               })
-              .catch((err) => toJson.bind(res)('비밀번호 해시 과정에서 에러가 발생하였습니다.'));
+              .catch((err) => res.json(basickResponse('비밀번호 해시 과정에서 에러가 발생하였습니다.')));
           }
         })
         .catch((err) => {
           console.log(err);
-          toJson.bind(res)('로그인 중 에러가 발생하였습니다.');
+          res.json(basickResponse('로그인 중 에러가 발생하였습니다.'));
         });
     }
   },
@@ -73,7 +69,7 @@ const account = {
     email = email.trim();
     password = password.trim();
 
-    if (email == '' || password == '') toJson.bind(res)('빈 문자열입니다.');
+    if (email == '' || password == '') res.json(basickResponse('빈 문자열입니다.'));
     else {
       User.find({ email })
         .then((data) => {
@@ -94,13 +90,13 @@ const account = {
               .then((result) => {
                 // 비밀번호 일치
                 result
-                  ? toJson.bind(res)('로그인에 성공했습니다.', true, { accessToken: accessToken })
-                  : toJson.bind(res)('올바르지 않은 비밀번호입니다.');
+                  ? res.json(resultResponse('로그인에 성공했습니다.', true, { accessToken: accessToken }))
+                  : res.json(basickResponse('올바르지 않은 비밀번호입니다.'));
               })
-              .catch((err) => toJson.bind(res)('비밀번호 확인 중 에러가 발생하였습니다.'));
-          } else toJson.bind(res)('가입하지 않은 사용자입니다.');
+              .catch((err) => res.json(basickResponse('비밀번호 확인 중 에러가 발생하였습니다.')));
+          } else res.json(basickResponse('가입하지 않은 사용자입니다.'));
         })
-        .catch((err) => toJson.bind(res)('사용자가 존재하는지 확인 중 에러가 발생하였습니다.'));
+        .catch((err) => res.json(basickResponse('사용자가 존재하는지 확인 중 에러가 발생하였습니다.')));
     }
   },
 
@@ -109,7 +105,7 @@ const account = {
     email = email.trim();
     password = password.trim();
     if (!email || !password) {
-      toJson.bind(res)('빈 문자열입니다.');
+      res.json(basickResponse())();
     } else {
       User.find({ email })
         .then((data) => {
@@ -118,12 +114,12 @@ const account = {
               .hash(password, saltRounds)
               .then((hashedPassword) =>
                 User.updateOne({ email: data[0].email }, { $set: { password: hashedPassword } }).then((element) =>
-                  toJson.bind(res)('성공적으로 변경이 완료되었습니다.', true),
+                  res.json(basickResponse('성공적으로 변경이 완료되었습니다.', true)),
                 ),
               );
-          else toJson.bind(res)('존재하지 않는 사용자입니다.');
+          else res.json(basickResponse('존재하지 않는 사용자입니다.'));
         })
-        .catch((err) => toJson.bind(res)('사용자가 존재하는지 확인 중 에러가 발생하였습니다.'));
+        .catch((err) => res.json(basickResponse('사용자가 존재하는지 확인 중 에러가 발생하였습니다.')));
     }
   },
 
@@ -131,14 +127,14 @@ const account = {
     let { email, verifyCode } = req.body;
     email = email.trim();
     verifyCode = verifyCode.trim();
-    if (!email) toJson.bind(res)('빈 문자열입니다.');
+    if (!email) res.json(basickResponse())();
     else {
       User.find({ email }).then((data) => {
         if (data.length) {
           verifyCode === data[0].password.slice(-4)
-            ? toJson.bind(res)('인증 통과.', true)
-            : toJson.bind(res)('인증코드가 맞지 않습니다.');
-        } else toJson.bind(res)('존재하지 않는 사용자입니다.');
+            ? res.json(basickResponse('인증 통과.', true))
+            : res.json(basickResponse('인증코드가 맞지 않습니다.'));
+        } else res.json(basickResponse('존재하지 않는 사용자입니다.'));
       });
     }
   },
@@ -163,7 +159,7 @@ const account = {
           SECRET_KEY,
           accessTokenOptions,
         );
-        toJson.bind(res)('로그인에 성공했습니다.', true, { accessToken: accessToken });
+        res.json(resultResponse('로그인에 성공했습니다.', true, { accessToken: accessToken }));
       } else {
         const newUser = new User({
           name: given_name,
@@ -181,7 +177,7 @@ const account = {
               SECRET_KEY,
               accessTokenOptions,
             );
-            toJson.bind(res)('회원가입 및 로그인에 성공했습니다.', true, { accessToken: accessToken });
+            res.json(resultResponse('회원가입 및 로그인에 성공했습니다.', true, { accessToken: accessToken }));
           });
         });
       }
@@ -191,14 +187,14 @@ const account = {
   checkEmail: async (req, res) => {
     let { email } = req.body;
     email = email.trim();
-    if (email === '') toJson.bind(res)('빈 문자열입니다.');
-    else if (!emailRegex.test(email)) toJson.bind(res)('올바르지 않은 양식입니다.');
+    if (email === '') res.json(basickResponse('빈 문자열입니다.'));
+    else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
     else {
       User.find({ email })
         .then((data) => {
           data.length
-            ? toJson.bind(res)('이미 가입된 이메일입니다.')
-            : toJson.bind(res)('사용가능한 이메일입니다.', true);
+            ? res.json(basickResponse('이미 가입된 이메일입니다.'))
+            : res.json(basickResponse('사용가능한 이메일입니다.', true));
         })
         .catch((err) => {});
     }
@@ -207,26 +203,24 @@ const account = {
   checkName: async (req, res) => {
     let { name } = req.body;
     name = name.trim();
-    if (name === '') toJson.bind(res)('빈 문자열입니다.');
-    else if (!nameRegex.test(name)) toJson.bind(res)('올바르지 않은 양식입니다.');
+    if (name === '') res.json(basickResponse())();
+    else if (!nameRegex.test(name)) res.json(basickResponse('올바르지 않은 양식입니다.'));
     else {
       User.find({ name })
         .then((data) =>
           data.length
-            ? toJson.bind(res)('이미 사용중인 닉네임입니다.')
-            : toJson.bind(res)('사용가능한 닉네임입니다.', true),
+            ? res.json(basickResponse('이미 사용중인 닉네임입니다.'))
+            : res.json(basickResponse('사용가능한 닉네임입니다.', true)),
         )
         .catch((err) => {});
     }
   },
-};
 
-const email = {
   sendEmail: async (req, res) => {
     let { email } = req.body;
     email = email.trim();
-    if (email === '') toJson.bind(res)('빈 문자열입니다.');
-    else if (!emailRegex.test(email)) toJson.bind(res)('올바르지 않은 양식입니다.');
+    if (email === '') res.json(basickResponse('빈 문자열입니다.'));
+    else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
     else {
       User.find({ email })
         .then((data) => {
@@ -236,9 +230,9 @@ const email = {
               subject: `안녕하세요. ${data[0].name}님 민들레입니다.`,
               text: data[0].password.slice(-4),
             });
-            toJson.bind(res)('굳', true);
+            res.json(basickResponse('굳', true));
           } else {
-            toJson.bind(res)('없는데?');
+            res.json(basickResponse('없는데?'));
           }
         })
         .catch((err) => {});
@@ -246,7 +240,4 @@ const email = {
   },
 };
 
-module.exports = {
-  account,
-  email,
-};
+module.exports = account;

@@ -2,25 +2,23 @@
 
 const express = require('express');
 const router = express.Router();
-const ctrl = require('./controller');
-const verifyToken = require('./middlewares');
+const account = require('./controller/accountControl');
+const verifyToken = require('./provider/verifyToken');
 
 //account
-router.post('/account/signUp', ctrl.account.signUp);
-router.post('/account/signIn', ctrl.account.signIn);
-router.post('/account/resetPwd', ctrl.account.resetPwd);
-router.post('/account/verifyCode', ctrl.account.verifyCode);
-router.post('/account/google', ctrl.account.googleSignIn);
-// router.post('/account/withdrawal', ctrl.account.withDrawal);
+router.post('/account/signUp', account.signUp);
+router.post('/account/signIn', account.signIn);
+router.post('/account/resetPwd', account.resetPwd);
+router.post('/account/verifyCode', account.verifyCode);
+router.post('/account/google', account.googleSignIn);
+// router.post('/account/withdrawal', account.withDrawal);
+router.post('/account/checkEmail', account.checkEmail);
+router.post('/account/checkName', account.checkName);
+
+//email
+router.post('/account/auth', account.sendEmail);
+
 router.get('/test', verifyToken, (req, res) => {
   res.json(req.decoded);
 });
-//router.post("/login", ctrl.account.login);
-
-//닉네임 중복 검사 필요
-router.post('/account/checkEmail', ctrl.account.checkEmail);
-router.post('/account/checkName', ctrl.account.checkName);
-
-//email
-router.post('/account/auth', ctrl.email.sendEmail);
 module.exports = router;
