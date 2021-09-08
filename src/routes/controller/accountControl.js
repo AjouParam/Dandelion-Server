@@ -15,7 +15,7 @@ const saltRounds = 10;
 let nameRegex = /^[가-힣a-zA-Z0-9]{2,8}/i;
 let emailRegex = /^[\w\.]+@[\w](\.?[\w])*\.[a-z]{2,3}$/i;
 let passwordRegex = /^(?=.*[a-z])(?=.*\d)(?=.*\W).{8,16}$/i;
-let accessTokenOptions = { expiresIn: '14d', subject: 'userInfo' };
+let accessTokenOptions = { expiresIn: '30d', subject: 'userInfo' };
 
 const account = {
   signUp: async (req, res) => {
