@@ -123,6 +123,26 @@ const account = {
     }
   },
 
+  regenerateToken: async (req, res) => {
+    let userId = req.decoded._id;
+    let userName = req.decoded.name;
+    let userEmail = req.decoded.email;
+    try {
+      const accessToken = jwt.sign(
+        {
+          _id: userId,
+          name: userName,
+          email: userEmail,
+        },
+        SECRET_KEY,
+        accessTokenOptions,
+      );
+      res.json(resultResponse('토큰을 재발행하였습니다.', true, { accessToken: accessToken }));
+    } catch (error) {
+      return res.status(401).json({ status: 'FAILED', message: '토큰 발행 중 에러가 발생하였습니다.' });
+    }
+  },
+
   verifyCode: async (req, res) => {
     let { email, verifyCode } = req.body;
     email = email.trim();
