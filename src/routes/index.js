@@ -18,6 +18,7 @@ router.post('/account/checkName', account.checkName);
 //email
 router.post('/account/auth', account.sendEmail);
 
+router.post('/account/extendToken', verifyToken, (req, res) => {});
 router.get('/test', verifyToken, (req, res) => {
   res.json(req.decoded);
 });
