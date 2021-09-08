@@ -143,6 +143,8 @@ const account = {
     }
   },
 
+  createCode: async (req, res) => {},
+
   verifyCode: async (req, res) => {
     let { email, verifyCode } = req.body;
     email = email.trim();
@@ -239,6 +241,7 @@ const account = {
   sendEmail: async (req, res) => {
     let { email } = req.body;
     email = email.trim();
+    const code = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
     if (email === '') res.json(basickResponse('빈 문자열입니다.'));
     else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
     else {
@@ -248,14 +251,16 @@ const account = {
             Verify.sendGmail({
               toEmail: email,
               subject: `안녕하세요. ${data[0].name}님 민들레입니다.`,
-              text: data[0].password.slice(-4),
+              text: code,
             });
-            res.json(basickResponse('굳', true));
+            res.json(resultResponse('이메일을 보내기에 성공하였습니다.', true, { code: code }));
           } else {
-            res.json(basickResponse('없는데?'));
+            res.json(basickResponse('이메일을 보내기에 실패하였습니다.'));
           }
         })
-        .catch((err) => {});
+        .catch((err) => {
+          res.json(basickResponse('이메일을 보내는 중 에러가 발생하였습니다.'));
+        });
     }
   },
 };
