@@ -123,19 +123,23 @@ const account = {
     }
   },
 
-  verifyCode: async (req, res) => {
-    let { email, verifyCode } = req.body;
-    email = email.trim();
-    verifyCode = verifyCode.trim();
-    if (!email) res.json(basickResponse())();
-    else {
-      User.find({ email }).then((data) => {
-        if (data.length) {
-          verifyCode === data[0].password.slice(-4)
-            ? res.json(basickResponse('인증 통과.', true))
-            : res.json(basickResponse('인증코드가 맞지 않습니다.'));
-        } else res.json(basickResponse('존재하지 않는 사용자입니다.'));
-      });
+  regenerateToken: async (req, res) => {
+    let userId = req.decoded._id;
+    let userName = req.decoded.name;
+    let userEmail = req.decoded.email;
+    try {
+      const accessToken = jwt.sign(
+        {
+          _id: userId,
+          name: userName,
+          email: userEmail,
+        },
+        SECRET_KEY,
+        accessTokenOptions,
+      );
+      res.json(resultResponse('토큰을 재발행하였습니다.', true, { accessToken: accessToken }));
+    } catch (error) {
+      return res.status(401).json({ status: 'FAILED', message: '토큰 발행 중 에러가 발생하였습니다.' });
     }
   },
 
@@ -219,6 +223,7 @@ const account = {
   sendEmail: async (req, res) => {
     let { email } = req.body;
     email = email.trim();
+    const code = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
     if (email === '') res.json(basickResponse('빈 문자열입니다.'));
     else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
     else {
@@ -228,14 +233,16 @@ const account = {
             Verify.sendGmail({
               toEmail: email,
               subject: `안녕하세요. ${data[0].name}님 민들레입니다.`,
-              text: data[0].password.slice(-4),
+              text: code,
             });
-            res.json(basickResponse('굳', true));
+            res.json(resultResponse('이메일을 보내기에 성공하였습니다.', true, { code: code }));
           } else {
-            res.json(basickResponse('없는데?'));
+            res.json(basickResponse('이메일을 보내기에 실패하였습니다.'));
           }
         })
-        .catch((err) => {});
+        .catch((err) => {
+          res.json(basickResponse('이메일을 보내는 중 에러가 발생하였습니다.'));
+        });
     }
   },
 };
