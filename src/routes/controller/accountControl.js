@@ -143,24 +143,6 @@ const account = {
     }
   },
 
-  createCode: async (req, res) => {},
-
-  verifyCode: async (req, res) => {
-    let { email, verifyCode } = req.body;
-    email = email.trim();
-    verifyCode = verifyCode.trim();
-    if (!email) res.json(basickResponse())();
-    else {
-      User.find({ email }).then((data) => {
-        if (data.length) {
-          verifyCode === data[0].password.slice(-4)
-            ? res.json(basickResponse('인증 통과.', true))
-            : res.json(basickResponse('인증코드가 맞지 않습니다.'));
-        } else res.json(basickResponse('존재하지 않는 사용자입니다.'));
-      });
-    }
-  },
-
   googleSignIn: async (req, res) => {
     let { idToken } = req.body;
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
