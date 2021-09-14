@@ -3,7 +3,10 @@
 const express = require('express');
 const router = express.Router();
 const account = require('./controller/accountControl');
+const dandelion = require('./controller/mainControl');
 const verifyToken = require('./provider/verifyToken');
+//test
+const Dandelion = require('../models/Dandelion');
 
 //account
 //회원가입
@@ -23,5 +26,13 @@ router.post('/account/checkName', account.checkName);
 router.post('/account/emailAuth', account.sendEmail);
 //토큰 재발행
 router.get('/account/regenerateToken', verifyToken, account.regenerateToken);
+
+//main
+//민들레 생성
+router.post('/dandelion/create', verifyToken, dandelion.create);
+//좌표 범위 내의 민들레 불러오기
+router.get('/dandelion/get', verifyToken, dandelion.get);
+
+//민들레 성장, 실시간 방문자 수 부분
 
 module.exports = router;
