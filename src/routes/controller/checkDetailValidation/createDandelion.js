@@ -1,5 +1,5 @@
 const checkName = (name) => {};
 const checkPositionType = (longitude, latitude) =>
-  ['int', 'float'].includes(typeof longitude) && ['int', 'float'].includes(typeof latitude) ? false : true;
+  toString.call(longitude) === '[object Number]' && toString.call(latitude) === '[object Number]' ? false : true;
 
 module.exports = { checkName, checkPositionType };
