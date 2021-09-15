@@ -6,11 +6,11 @@ const resultResponse = (message, status = false, data = {}) => {
   };
 };
 
-const basickResponse = (message, status = false) => {
+const basicResponse = (message, status = false) => {
   return {
     status: status ? 'SUCCESS' : 'FAILED',
     message: message,
   };
 };
 
-module.exports = { resultResponse, basickResponse };
+module.exports = { resultResponse, basicResponse };

@@ -5,7 +5,7 @@ const Verify = require('../provider/verifyEmail');
 const User = require('../../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { basickResponse } = require('../../config/response');
+const { basicResponse } = require('../../config/response');
 const { resultResponse } = require('../../config/response');
 require('dotenv').config();
 
@@ -24,18 +24,17 @@ const account = {
     email = email.trim();
     password = password.trim();
 
-    if (name == '' || email == '' || password == '') res.json(basickResponse('빈 문자열입니다.'));
+    if (name == '' || email == '' || password == '') res.json(basicResponse('빈 문자열입니다.'));
     else if (!nameRegex.test(name))
-      res.json(basickResponse('영어, 한글, 숫자만 허용하며, 2자 이상 8자 이내여야 합니다.'));
-    else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
-    else if (!passwordRegex.test(password))
-      res.json(basickResponse('영어, 숫자, 특수문자 혼용 8자 이상이어야 합니다.'));
+      res.json(basicResponse('영어, 한글, 숫자만 허용하며, 2자 이상 8자 이내여야 합니다.'));
+    else if (!emailRegex.test(email)) res.json(basicResponse('올바르지 않은 양식입니다.'));
+    else if (!passwordRegex.test(password)) res.json(basicResponse('영어, 숫자, 특수문자 혼용 8자 이상이어야 합니다.'));
     else {
       // 이미 가입된 user인지 확인
       User.find({ email })
         .then((result) => {
           //이미 가입된 user가 있음.
-          if (result.length) res.json(basickResponse('이미 가입된 사용자입니다.'));
+          if (result.length) res.json(basicResponse('이미 가입된 사용자입니다.'));
           else {
             // user 생성
             // password handling
@@ -52,14 +51,14 @@ const account = {
                   .then((result) =>
                     res.json(resultResponse('회원가입이 성공적으로 완료되었습니다.', true, { data: result })),
                   )
-                  .catch((err) => res.json(basickResponse('회원가입 중 에러가 발생하였습니다.')));
+                  .catch((err) => res.json(basicResponse('회원가입 중 에러가 발생하였습니다.')));
               })
-              .catch((err) => res.json(basickResponse('비밀번호 해시 과정에서 에러가 발생하였습니다.')));
+              .catch((err) => res.json(basicResponse('비밀번호 해시 과정에서 에러가 발생하였습니다.')));
           }
         })
         .catch((err) => {
           console.log(err);
-          res.json(basickResponse('로그인 중 에러가 발생하였습니다.'));
+          res.json(basicResponse('로그인 중 에러가 발생하였습니다.'));
         });
     }
   },
@@ -69,7 +68,7 @@ const account = {
     email = email.trim();
     password = password.trim();
 
-    if (email == '' || password == '') res.json(basickResponse('빈 문자열입니다.'));
+    if (email == '' || password == '') res.json(basicResponse('빈 문자열입니다.'));
     else {
       User.find({ email })
         .then((data) => {
@@ -91,12 +90,12 @@ const account = {
                 // 비밀번호 일치
                 result
                   ? res.json(resultResponse('로그인에 성공했습니다.', true, { accessToken: accessToken }))
-                  : res.json(basickResponse('올바르지 않은 비밀번호입니다.'));
+                  : res.json(basicResponse('올바르지 않은 비밀번호입니다.'));
               })
-              .catch((err) => res.json(basickResponse('비밀번호 확인 중 에러가 발생하였습니다.')));
-          } else res.json(basickResponse('가입하지 않은 사용자입니다.'));
+              .catch((err) => res.json(basicResponse('비밀번호 확인 중 에러가 발생하였습니다.')));
+          } else res.json(basicResponse('가입하지 않은 사용자입니다.'));
         })
-        .catch((err) => res.json(basickResponse('사용자가 존재하는지 확인 중 에러가 발생하였습니다.')));
+        .catch((err) => res.json(basicResponse('사용자가 존재하는지 확인 중 에러가 발생하였습니다.')));
     }
   },
 
@@ -105,7 +104,7 @@ const account = {
     email = email.trim();
     password = password.trim();
     if (!email || !password) {
-      res.json(basickResponse())();
+      res.json(basicResponse())();
     } else {
       User.find({ email })
         .then((data) => {
@@ -114,12 +113,12 @@ const account = {
               .hash(password, saltRounds)
               .then((hashedPassword) =>
                 User.updateOne({ email: data[0].email }, { $set: { password: hashedPassword } }).then((element) =>
-                  res.json(basickResponse('성공적으로 변경이 완료되었습니다.', true)),
+                  res.json(basicResponse('성공적으로 변경이 완료되었습니다.', true)),
                 ),
               );
-          else res.json(basickResponse('존재하지 않는 사용자입니다.'));
+          else res.json(basicResponse('존재하지 않는 사용자입니다.'));
         })
-        .catch((err) => res.json(basickResponse('사용자가 존재하는지 확인 중 에러가 발생하였습니다.')));
+        .catch((err) => res.json(basicResponse('사용자가 존재하는지 확인 중 에러가 발생하였습니다.')));
     }
   },
 
@@ -191,14 +190,14 @@ const account = {
   checkEmail: async (req, res) => {
     let { email } = req.body;
     email = email.trim();
-    if (email === '') res.json(basickResponse('빈 문자열입니다.'));
-    else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
+    if (email === '') res.json(basicResponse('빈 문자열입니다.'));
+    else if (!emailRegex.test(email)) res.json(basicResponse('올바르지 않은 양식입니다.'));
     else {
       User.find({ email })
         .then((data) => {
           data.length
-            ? res.json(basickResponse('이미 가입된 이메일입니다.'))
-            : res.json(basickResponse('사용가능한 이메일입니다.', true));
+            ? res.json(basicResponse('이미 가입된 이메일입니다.'))
+            : res.json(basicResponse('사용가능한 이메일입니다.', true));
         })
         .catch((err) => {});
     }
@@ -207,14 +206,14 @@ const account = {
   checkName: async (req, res) => {
     let { name } = req.body;
     name = name.trim();
-    if (name === '') res.json(basickResponse())();
-    else if (!nameRegex.test(name)) res.json(basickResponse('올바르지 않은 양식입니다.'));
+    if (name === '') res.json(basicResponse())();
+    else if (!nameRegex.test(name)) res.json(basicResponse('올바르지 않은 양식입니다.'));
     else {
       User.find({ name })
         .then((data) =>
           data.length
-            ? res.json(basickResponse('이미 사용중인 닉네임입니다.'))
-            : res.json(basickResponse('사용가능한 닉네임입니다.', true)),
+            ? res.json(basicResponse('이미 사용중인 닉네임입니다.'))
+            : res.json(basicResponse('사용가능한 닉네임입니다.', true)),
         )
         .catch((err) => {});
     }
@@ -224,8 +223,8 @@ const account = {
     let { email } = req.body;
     email = email.trim();
     const code = (Math.floor(Math.random() * 10000) + 10000).toString().substring(1);
-    if (email === '') res.json(basickResponse('빈 문자열입니다.'));
-    else if (!emailRegex.test(email)) res.json(basickResponse('올바르지 않은 양식입니다.'));
+    if (email === '') res.json(basicResponse('빈 문자열입니다.'));
+    else if (!emailRegex.test(email)) res.json(basicResponse('올바르지 않은 양식입니다.'));
     else {
       User.find({ email })
         .then((data) => {
@@ -237,11 +236,11 @@ const account = {
             });
             res.json(resultResponse('이메일을 보내기에 성공하였습니다.', true, { code: code }));
           } else {
-            res.json(basickResponse('이메일을 보내기에 실패하였습니다.'));
+            res.json(basicResponse('이메일을 보내기에 실패하였습니다.'));
           }
         })
         .catch((err) => {
-          res.json(basickResponse('이메일을 보내는 중 에러가 발생하였습니다.'));
+          res.json(basicResponse('이메일을 보내는 중 에러가 발생하였습니다.'));
         });
     }
   },
