@@ -1,5 +1,6 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basickResponse } = require('../../config/response');
+const { checkName, checkPositionType } = require('./checkDetailValidation/createDandelion');
 
 const dandelion = {
   create: async (req, res) => {
@@ -15,12 +16,26 @@ const dandelion = {
 
     if (!name || !latitude || !longitude || !description)
       res.json(basickResponse('Request Body에 정보가 누락되었습니다.'));
-
+    if (longitude === undefined || latitude === undefined) {
+      res.json(
+        basickResponse(
+          `${longitude === undefined ? `longitude가 정의되어 있지 않습니다.` : ``}${
+            latitude === undefined ? `latitude가 정의되어 있지 않습니다.` : ``
+          }`,
+        ),
+      );
+    } else if (checkPositionType(longitude, latitude)) {
+      res.json(
+        basickResponse(
+          `위치 타입이 맞지 않습니다. 현재 타입은 longitude: ${typeof longitude} latitude: ${typeof latitude}`,
+        ),
+      );
+    }
     const newDandelion = new Dandelion({
       name,
       _creator: userId,
-      longitude,
-      latitude,
+      longitude: float(longitude),
+      latitude: float(latitude),
       description,
       level: 1,
     });
