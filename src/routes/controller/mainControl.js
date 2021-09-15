@@ -8,10 +8,10 @@ const dandelion = {
     const userId = req.decoded._id;
     const { name, latitude, longitude, description } = req.body;
     //validation check 필요
-    // type check와 undefined 아닌지 체크
-    // name : 한글영어숫자 혼용 공백 포함 8자 이내.
+    // type check와 undefined 아닌지 체크 ✅,✅
+    // name : 한글영어숫자 혼용 공백 포함 8자 이내. ✅
     // latitude, longitude : 실수 ✅,✅
-    // description : string
+    // description : string ✅,✅
     // 완성해주시고 git wiki까지 작성해주시면 감사하겠습니다 ㅎㅎ
 
     if (!name || !latitude || !longitude || !description)
