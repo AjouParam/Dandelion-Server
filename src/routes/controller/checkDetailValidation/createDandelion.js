@@ -1,7 +1,9 @@
+let nameRegex = /^[가-힣a-zA-Z0-9\s]{1,8}$/;
+
 const checkPositionNumberType = (longitude, latitude) =>
   toString.call(longitude) === '[object Number]' && toString.call(latitude) === '[object Number]' ? false : true;
 
-const checkNameType = (name) => {};
+const checkNameType = (name) => (!nameRegex.test(name) ? `정해진 양식에 맞지 않습니다.` : ``);
 
 const checkPositionType = (longitude, latitude) => {
   if (toString.call(longitude) === '[object Undefined]' || toString.call(latitude) === '[object Undefined]') {
