@@ -1,12 +1,8 @@
 const mongoose = require('mongoose');
+mongoose.set('useCreateIndex', true);
 const Schema = mongoose.Schema;
-const moment = require('moment');
-
-const locationSchema = new Schema({
-  longitude: Number,
-  latitude: Number,
-});
-
+const curr = new Date();
+//한국 시간으로 저장되어야함
 const DandelionSchema = new Schema({
   name: String,
   _creator: {
@@ -21,8 +17,17 @@ const DandelionSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
-  longitude: Number,
-  latitude: Number,
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  },
   level: {
     type: Number,
     default: 1,
@@ -30,7 +35,7 @@ const DandelionSchema = new Schema({
   address: String,
   description: String,
 });
-
+DandelionSchema.index({ location: '2dsphere' });
 const Dandelion = mongoose.model('Dandelion', DandelionSchema);
 
 module.exports = Dandelion;

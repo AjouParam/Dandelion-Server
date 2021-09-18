@@ -1,4 +1,4 @@
-let nameRegex = /^[가-힣a-zA-Z0-9\s]{1,8}$/;
+let nameRegex = /^[가-힣a-zA-Z0-9\s]{1,10}$/;
 
 const checkPositionNumberType = (longitude, latitude) =>
   toString.call(longitude) === '[object Number]' && toString.call(latitude) === '[object Number]' ? false : true;
