@@ -75,8 +75,9 @@ const dandelion = {
           resObj.name = result[i].name;
           resObj.level = result[i].level;
           resObj._id = result[i]._id;
-          resObj.longitude = result[i].location.coordinates[0];
-          resObj.latitude = result[i].location.coordinates[1];
+          resObj.location = {};
+          resObj.location.longitude = result[i].location.coordinates[0];
+          resObj.location.latitude = result[i].location.coordinates[1];
           resObj.ovelap = false;
           response.push(resObj);
         }
