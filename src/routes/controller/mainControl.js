@@ -45,14 +45,14 @@ const dandelion = {
       });
   },
   get: async (req, res) => {
-    const { userPosition, maxDistance } = req.body;
+    const { centerPosition, maxDistance } = req.body;
 
-    if (!userPosition || !maxDistance) return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
+    if (!centerPosition || !maxDistance) return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
 
-    if (!userPosition.latitude || !userPosition.longitude)
+    if (!centerPosition.latitude || !centerPosition.longitude)
       return res.json(basicResponse('uppderLeftPosition의 위치 정보가 누락되었습니다.'));
 
-    const positionMessage = checkPositionType(userPosition.longitude, userPosition.latitude);
+    const positionMessage = checkPositionType(centerPosition.longitude, centerPosition.latitude);
     if (positionMessage) return res.json(basicResponse(positionMessage));
 
     Dandelion.find({
@@ -60,7 +60,7 @@ const dandelion = {
         $near: {
           $geometry: {
             type: 'Point',
-            coordinates: [userPosition.longitude, userPosition.latitude],
+            coordinates: [centerPosition.longitude, centerPosition.latitude],
           },
           $maxDistance: maxDistance,
         },
