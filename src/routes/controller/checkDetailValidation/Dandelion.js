@@ -1,3 +1,4 @@
+const Dandelion = require('../../models/Dandelion');
 let nameRegex = /^[가-힣a-zA-Z0-9\s]{1,10}$/;
 
 const checkPositionNumberType = (longitude, latitude) =>
@@ -21,4 +22,8 @@ const checkDescriptionType = (description) =>
     ? `타입이 맞지 않습니다. 현재 타입은 ${toString.call(description)}`
     : ``;
 
-module.exports = { checkNameType, checkPositionType, checkDescriptionType };
+const checkAlreadyExist = (longitude, latitude) =>
+  Dandelion.find({ coordinates: [longitude, latitude] }).then((data) => {
+    return data.length ? true : false;
+  });
+module.exports = { checkNameType, checkPositionType, checkDescriptionType, checkAlreadyExist };
