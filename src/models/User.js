@@ -9,6 +9,11 @@ const UserSchema = new Schema({
     type: Number,
     default: 0,
   },
+  thumbnail: String,
+  seeds: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const User = mongoose.model('User', UserSchema);

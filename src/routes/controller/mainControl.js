@@ -6,12 +6,7 @@ const {
   checkDescriptionType,
   checkAlreadyExist,
 } = require('./checkDetailValidation/Dandelion');
-
-const getKoreanTime = () => {
-  const curr = new Date();
-  const utc = curr.getTime() + curr.getTimezoneOffset() * 60 * 1000;
-  return new Date(utc + 9 * 60 * 60 * 1000);
-};
+const { getKoreanTime } = require('../provider/util');
 
 const dandelion = {
   create: async (req, res) => {
@@ -27,18 +22,19 @@ const dandelion = {
     if (!name || !location.latitude || !location.longitude)
       return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
     //description 없다면 description : ""로 보내줄 것.
-    const nameMessage = checkNameType(name);
+    const nameMessage = await checkNameType(name);
     if (nameMessage) return res.json(basicResponse(nameMessage));
 
-    const positionMessage = checkPositionType(location.longitude, location.latitude);
+    const positionMessage = await checkPositionType(location.longitude, location.latitude);
     if (positionMessage) return res.json(basicResponse(positionMessage));
 
-    const descriptionMessage = checkDescriptionType(description);
+    const descriptionMessage = await checkDescriptionType(description);
     if (descriptionMessage) return res.json(basicResponse(descriptionMessage));
 
-    const ExistPositionMessage = checkAlreadyExist(location.longitude, location.latitude);
+    const ExistPositionMessage = await checkAlreadyExist(location.longitude, location.latitude);
     if (ExistPositionMessage) return res.json(basicResponse(ExistPositionMessage));
 
+    //한국 시간 해결 안됨..
     const newDandelion = new Dandelion({
       name,
       _creator: userId,
@@ -48,7 +44,7 @@ const dandelion = {
       },
       description,
       level: 1,
-      createdAt: getKoreanTime(),
+      createdAt: await getKoreanTime(),
     });
     newDandelion
       .save()
@@ -66,7 +62,7 @@ const dandelion = {
     if (!centerPosition.latitude || !centerPosition.longitude)
       return res.json(basicResponse('uppderLeftPosition의 위치 정보가 누락되었습니다.'));
 
-    const positionMessage = checkPositionType(centerPosition.longitude, centerPosition.latitude);
+    const positionMessage = await checkPositionType(centerPosition.longitude, centerPosition.latitude);
     if (positionMessage) return res.json(basicResponse('해당 위치에 이미 민들레가 존재합니다.'));
 
     Dandelion.find({
@@ -92,7 +88,6 @@ const dandelion = {
           resObj.location = {};
           resObj.location.longitude = result[i].location.coordinates[0];
           resObj.location.latitude = result[i].location.coordinates[1];
-          resObj.ovelap = false;
           response.push(resObj);
         }
 

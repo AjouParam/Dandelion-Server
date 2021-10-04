@@ -2,18 +2,20 @@ const mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true);
 const Schema = mongoose.Schema;
 const EventSchema = new Schema({
-  eventId: String,
-  userId: {
-    type: String,
+  _user: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  dandelionId: {
-    type: String,
+  _dandelion: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Dandelion',
   },
   createdAt: {
     type: Date,
     default: Date.now(),
+  },
+  updatedAt: {
+    type: Date,
   },
   location: {
     type: {
@@ -26,22 +28,29 @@ const EventSchema = new Schema({
       required: true,
     },
   },
-  FirstServedNum: {
+  firstComeNum: {
     type: Number,
+    required: true,
   },
-  EventReward: {
+  rewards: {
     type: String,
   },
-  EventStatus: {
-    type: Boolean,
-    default: 1,
+  status: {
+    type: Number,
+    default: 0,
   },
-  like: {
+  likes: {
     type: Number,
     default: 1,
   },
-  comments: {
-    type: Object,
+  text: {
+    type: String,
+    required: true,
+  },
+  image: [String],
+  startDate: {
+    type: Date,
+    required: true,
   },
 });
 EventSchema.index({ location: '2dsphere' });

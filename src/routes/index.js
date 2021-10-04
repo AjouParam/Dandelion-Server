@@ -2,11 +2,13 @@
 
 const express = require('express');
 const router = express.Router();
+
 const account = require('./controller/accountControl');
 const dandelion = require('./controller/mainControl');
+const post = require('./controller/postControl');
+const event = require('./controller/eventControl');
+
 const verifyToken = require('./provider/verifyToken');
-//test
-const Dandelion = require('../models/Dandelion');
 
 //account
 //회원가입
@@ -34,5 +36,18 @@ router.post('/dandelion/create', verifyToken, dandelion.create);
 router.post('/dandelion/get', verifyToken, dandelion.get);
 
 //민들레 성장, 실시간 방문자 수 부분
+
+//민들레 상세
+//민들레 게시글
+router.post('/:dandelionId/post/create', verifyToken, post.create);
+router.post('/:dandelionId/post/delete/:postId', verifyToken, post.delete);
+router.post('/:dandelionId/post/update/:postId', verifyToken, post.update);
+router.get('/:dandelionId/post/', verifyToken, post.get);
+
+//민들레 이벤트
+router.post('/:dandelionId/event/create', verifyToken, event.create);
+router.post('/:dandelionId/event/delete/:eventId', verifyToken, event.delete);
+router.post('/:dandelionId/event/update/:eventId', verifyToken, event.update);
+router.get('/:dandelionId/event/', verifyToken, event.get);
 
 module.exports = router;
