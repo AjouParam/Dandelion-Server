@@ -1,11 +1,6 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
-const {
-  checkNameType,
-  checkPositionType,
-  checkDescriptionType,
-  checkAlreadyExist,
-} = require('./checkDetailValidation/Dandelion');
+const { checkNameType, checkPositionType, checkDescriptionType, checkAlreadyExist } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 
 const dandelion = {
@@ -89,6 +84,7 @@ const dandelion = {
           resObj.location.longitude = result[i].location.coordinates[0];
           resObj.location.latitude = result[i].location.coordinates[1];
           response.push(resObj);
+          resObj = null;
         }
 
         return res.json(resultResponse('민들레 불러오기에 성공했습니다.', true, { data: response }));

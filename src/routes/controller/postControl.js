@@ -1,7 +1,7 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const Post = require('../../models/Post');
-const { checkNotExist, checkPost } = require('./checkDetailValidation/Dandelion');
+const { checkNotExist, checkPost } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
 

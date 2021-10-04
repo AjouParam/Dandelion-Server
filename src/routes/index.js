@@ -40,14 +40,14 @@ router.post('/dandelion/get', verifyToken, dandelion.get);
 //민들레 상세
 //민들레 게시글
 router.post('/:dandelionId/post/create', verifyToken, post.create);
-router.post('/:dandelionId/post/delete/:postId', verifyToken, post.delete);
-router.post('/:dandelionId/post/update/:postId', verifyToken, post.update);
+router.delete('/:dandelionId/post/delete/:postId', verifyToken, post.delete);
+router.patch('/:dandelionId/post/update/:postId', verifyToken, post.update);
 router.get('/:dandelionId/post/', verifyToken, post.get);
 
 //민들레 이벤트
 router.post('/:dandelionId/event/create', verifyToken, event.create);
-router.post('/:dandelionId/event/delete/:eventId', verifyToken, event.delete);
-router.post('/:dandelionId/event/update/:eventId', verifyToken, event.update);
+router.delete('/:dandelionId/event/delete/:eventId', verifyToken, event.delete);
+router.patch('/:dandelionId/event/update/:eventId', verifyToken, event.update);
 router.get('/:dandelionId/event/', verifyToken, event.get);
 
 module.exports = router;
