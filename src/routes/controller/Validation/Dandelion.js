@@ -46,7 +46,19 @@ const checkPost = async (dandelionId, userId, postId) =>
       console.log(err);
       return '게시글 Validation 중 에러가 발생하였습니다.';
     });
-
+const checkEvent = async (dandelionId, userId, eventId) =>
+  Event.findById(eventId)
+    .select('_dandelion _user')
+    .then((result) => {
+      if (!result) return '존재하지 않는 이벤트입니다.';
+      if (dandelionId != result._dandelion) return '이벤트 인덱스가 민들레 인덱스와 매치되지 않습니다.';
+      if (userId != result._user) return '권한이 없습니다.';
+      return '';
+    })
+    .catch((err) => {
+      console.log(err);
+      return '이벤트 Validation 중 에러가 발생하였습니다.';
+    });
 module.exports = {
   checkNameType,
   checkPositionType,
@@ -54,4 +66,5 @@ module.exports = {
   checkAlreadyExist,
   checkNotExist,
   checkPost,
+  checkEvent,
 };
