@@ -90,7 +90,31 @@ const event = {
         return res.json(basicResponse('이벤트 가져오는 중 에러가 발생하였습니다.'));
       });
   },
-  update: async (req, res) => {},
+  update: async (req, res) => {
+    const userId = req.decoded._id;
+    const { dandelionId, eventId } = req.params;
+    const { changedText = text, changedTitle = title, images } = req.body.text;
+
+    if (!mongoose.isValidObjectId(eventId)) return res.json(basicResponse(' 이벤트의 Object Id가 올바르지 않습니다.'));
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('이벤트의 Object Id가 올바르지 않습니다.'));
+
+    const isDandelionNotExist = await checkNotExist(dandelionId);
+    if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.'));
+
+    const checkEventMessage = await checkEvent(dandelionId, userId, eventId);
+    if (checkEventMessage) return res.json(basicResponse(checkEventMessage));
+
+    Post.updateOne(
+      { _id: eventId, _dandelion: dandelionId },
+      { text: changedText, title: changedTitle, updatedAt: await getKoreanTime(), images: images },
+    )
+      .then(res.json(basicResponse('이벤트가 수정되었습니다.', true)))
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('이벤트 수정 중 에러가 발생하였습니다.'));
+      });
+  },
 };
 
 module.exports = event;
