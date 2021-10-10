@@ -50,7 +50,46 @@ const event = {
         return res.json(basicResponse('이벤트 삭제 중 에러가 발생하였습니다.'));
       });
   },
-  get: async (req, res) => {},
+  get: async (req, res) => {
+    const dandelionId = req.params.dandelionId;
+    const isDandelionNotExist = await checkNotExist(dandelionId);
+    if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
+
+    Event.find({ _dandelion: dandelionId })
+      .populate({ path: '_user', select: 'name thumbnail' })
+      .select(
+        '_id location createdAt updatedAt title text images _dandelion _user likes firstComeNum rewards status startDate',
+      )
+      .then((result) => {
+        let response = [];
+        for (let i = 0; i < result.length; i++) {
+          let resObj = {};
+          resObj._id = result[i]._id;
+          resObj.location = {};
+          resObj.location.longitude = result[i].location.coordinates[0];
+          resObj.location.latitude = result[i].location.coordinates[1];
+          resObj.createdAt = result[i].createdAt;
+          resObj.updatedAt = result[i].updatedAt;
+          resObj._dandelion = result[i]._dandelion;
+          resObj._user = result[i]._user;
+          resObj.title = result[i].title;
+          resObj.text = result[i].text;
+          resObj.images = result[i].images;
+          resObj.likes = result[i].likes;
+          resObj.firstComeNum = result[i].firstComeNum;
+          resObj.rewards = result[i].rewards;
+          resObj.status = result[i].status;
+          resObj.startDate = result[i].startDate;
+          response.push(resObj);
+          resObj = null;
+        }
+        res.json(resultResponse('민들레에 해당하는 이벤트입니다.', true, { data: response }));
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('이벤트 가져오는 중 에러가 발생하였습니다.'));
+      });
+  },
   update: async (req, res) => {},
 };
 
