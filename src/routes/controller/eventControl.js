@@ -1,17 +1,23 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
-const Event = require('../../models/Event');
-const { checkNotExist, checkEvent } = require('./Validation/Dandelion');
+const Post = require('../../models/Post');
+const { checkNotExist, checkPost } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
+const mongoose = require('mongoose');
 
 const event = {
   create: async (req, res) => {
     const userId = req.decoded._id;
     const dandelionId = req.params.dandelionId;
-    const { title, text, location, images, rewards, firstComeNum } = req.body;
+    const { title, text, location, images, rewards, firstComeNum, startDate } = req.body;
     const isDandelionNotExist = await checkNotExist(dandelionId);
+    // 이벤트 column 요소 validation necessary
+    // startDate type validation necessary
+    // status 관련해서 startDate와 비교하고 더 전이면 0, .. 선착순 어케? 현재는 status default로 0
+    const dateArray = startDate.split('-');
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
-    const newEvent = new Event({
+
+    const newEvent = new Post({
       _user: userId,
       _dandelion: dandelionId,
       location: {
@@ -24,7 +30,8 @@ const event = {
       rewards,
       images: images,
       createdAt: await getKoreanTime(),
-      startDate: await getKoreanTime(),
+      startDate: new Date(dateArray[0], dateArray[1], dateArray[2]),
+      isEvent: true,
     });
     newEvent
       .save()
@@ -40,10 +47,10 @@ const event = {
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
-    const checkEventMessage = await checkEvent(dandelionId, userId, eventId);
+    const checkEventMessage = await checkPost(dandelionId, userId, eventId);
     if (checkEventMessage) return res.json(basicResponse(checkEventMessage));
 
-    Event.deleteOne({ _id: eventId, _dandelion: dandelionId })
+    Post.deleteOne({ _id: eventId, _dandelion: dandelionId })
       .then(res.json(basicResponse('이벤트를 삭제하였습니다.', true)))
       .catch((err) => {
         console.log(err);
@@ -61,8 +68,8 @@ const event = {
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
-    Event.aggregate([
-      { $match: { _dandelion: mongoose.Types.ObjectId(dandelionId) } },
+    Post.aggregate([
+      { $match: { _dandelion: mongoose.Types.ObjectId(dandelionId), isEvent: true } },
       {
         $lookup: {
           from: 'users',
@@ -77,15 +84,15 @@ const event = {
       { $limit: maxPost },
       {
         $lookup: {
-          from: 'eventcomments',
+          from: 'comments',
           localField: '_id',
-          foreignField: '_event',
+          foreignField: '_post',
           as: 'comments',
         },
       },
       {
         $lookup: {
-          from: 'eventlikes',
+          from: 'likes',
           localField: '_id',
           foreignField: '_post',
           as: 'likes',
@@ -126,7 +133,14 @@ const event = {
   update: async (req, res) => {
     const userId = req.decoded._id;
     const { dandelionId, eventId } = req.params;
-    const { changedText = text, changedTitle = title, images } = req.body.text;
+    const {
+      changedText = req.body.text,
+      changedTitle = req.body.title,
+      images,
+      startDate,
+      firstComeNum,
+      rewards,
+    } = req.body;
 
     if (!mongoose.isValidObjectId(eventId)) return res.json(basicResponse(' 이벤트의 Object Id가 올바르지 않습니다.'));
     if (!mongoose.isValidObjectId(dandelionId))
@@ -135,12 +149,20 @@ const event = {
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.'));
 
-    const checkEventMessage = await checkEvent(dandelionId, userId, eventId);
+    const checkEventMessage = await checkPost(dandelionId, userId, eventId);
     if (checkEventMessage) return res.json(basicResponse(checkEventMessage));
 
     Post.updateOne(
       { _id: eventId, _dandelion: dandelionId },
-      { text: changedText, title: changedTitle, updatedAt: await getKoreanTime(), images: images },
+      {
+        text: changedText,
+        title: changedTitle,
+        updatedAt: await getKoreanTime(),
+        images: images,
+        startDate: startDate,
+        firstComeNum: firstComeNum,
+        rewards: rewards,
+      },
     )
       .then(res.json(basicResponse('이벤트가 수정되었습니다.', true)))
       .catch((err) => {

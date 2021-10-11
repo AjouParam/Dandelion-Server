@@ -7,7 +7,7 @@ const account = require('./controller/accountControl');
 const dandelion = require('./controller/mainControl');
 const post = require('./controller/postControl');
 const event = require('./controller/eventControl');
-
+const comment = require('./controller/commentControl');
 const verifyToken = require('./provider/verifyToken');
 
 //account
@@ -45,16 +45,16 @@ router.patch('/:dandelionId/post/update/:postId', verifyToken, post.update);
 router.get('/:dandelionId/post/', verifyToken, post.get);
 
 //민들레 게시글-덧글
-router.post('/:postId/comment/create', verifyToken, post.comment.create);
-router.delete('/:postId/comment/delete/:commentId', verifyToken, post.comment.delete);
-router.patch('/:postId/comment/update/:commentId', verifyToken, post.comment.update);
-router.get('/:postId/comment/', verifyToken, post.comment.get);
+router.post('/:postId/comment/create', verifyToken, comment.create);
+router.delete('/:postId/comment/delete/:commentId', verifyToken, comment.delete);
+router.patch('/:postId/comment/update/:commentId', verifyToken, comment.update);
+router.get('/:postId/comment/', verifyToken, comment.get);
 
 //민들레 게시글-답글
-router.post('/:parentCommentId/nestedComment/create', verifyToken, post.nestedComment.create);
-router.delete('/:parentCommentId/nestedComment/delete/:commentId', verifyToken, post.nestedComment.delete);
-router.patch('/:parentCommentId/nestedComment/update/:commentId', verifyToken, post.nestedComment.update);
-router.get('/:parentCommentId/nestedComment/', verifyToken, post.nestedComment.get);
+router.post('/:parentCommentId/nestedComment/create', verifyToken, comment.nested.create);
+router.delete('/:parentCommentId/nestedComment/delete/:commentId', verifyToken, comment.nested.delete);
+router.patch('/:parentCommentId/nestedComment/update/:commentId', verifyToken, comment.nested.update);
+router.get('/:parentCommentId/nestedComment/', verifyToken, comment.nested.get);
 
 //민들레 이벤트
 router.post('/:dandelionId/event/create', verifyToken, event.create);

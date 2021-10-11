@@ -1,9 +1,7 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const Post = require('../../models/Post');
-const PostComment = require('../../models/PostComment');
-const PostLike = require('../../models/PostLike');
-const { checkNotExist, checkPost } = require('./Validation/Dandelion');
+const { checkNotExist, checkPost, checkPostNotExist, checkPostComment } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
 
@@ -93,7 +91,7 @@ const post = {
       { $limit: maxPost },
       {
         $lookup: {
-          from: 'postcomments',
+          from: 'comments',
           localField: '_id',
           foreignField: '_post',
           as: 'comments',
@@ -101,7 +99,7 @@ const post = {
       },
       {
         $lookup: {
-          from: 'postlikes',
+          from: 'likes',
           localField: '_id',
           foreignField: '_post',
           as: 'likes',
@@ -124,6 +122,7 @@ const post = {
           '_user.thumbnail': 1,
           comments: { $size: '$comments' },
           likes: { $size: '$likes' },
+          isEvent: 1,
         },
       },
     ])
@@ -164,19 +163,6 @@ const post = {
         console.log(err);
         return res.json(basicResponse('게시글 수정 중 에러가 발생하였습니다.'));
       });
-  },
-
-  comment: {
-    create: async (req, res) => {},
-    delete: async (req, res) => {},
-    get: async (req, res) => {},
-    update: async (req, res) => {},
-  },
-  nestedComment: {
-    create: async (req, res) => {},
-    delete: async (req, res) => {},
-    get: async (req, res) => {},
-    update: async (req, res) => {},
   },
 };
 
