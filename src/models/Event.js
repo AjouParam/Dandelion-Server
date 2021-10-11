@@ -39,15 +39,11 @@ const EventSchema = new Schema({
     type: Number,
     default: 0,
   },
-  likes: {
-    type: Number,
-    default: 1,
-  },
   text: {
     type: String,
     required: true,
   },
-  image: [String],
+  images: [String],
   startDate: {
     type: Date,
     required: true,

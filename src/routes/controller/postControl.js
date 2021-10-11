@@ -10,6 +10,10 @@ const post = {
     const userId = req.decoded._id;
     const dandelionId = req.params.dandelionId;
     const { title, text, location, images } = req.body;
+
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
@@ -39,6 +43,11 @@ const post = {
     const userId = req.decoded._id;
     const dandelionId = req.params.dandelionId;
     const postId = req.params.postId;
+
+    if (!mongoose.isValidObjectId(postId)) return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
@@ -54,6 +63,10 @@ const post = {
   },
   get: async (req, res) => {
     const dandelionId = req.params.dandelionId;
+
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
@@ -97,7 +110,7 @@ const post = {
 
     if (!mongoose.isValidObjectId(postId)) return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
     if (!mongoose.isValidObjectId(dandelionId))
-      return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
 
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.'));

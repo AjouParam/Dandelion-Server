@@ -31,7 +31,7 @@ const event = {
       .then((result) => res.json(resultResponse('이벤트를 생성하였습니다.', true, { data: result })))
       .catch((err) => {
         console.log(err);
-        return res.json(basicResponse('이벤 트 생성 중 에러가 발생하였습니다.'));
+        return res.json(basicResponse('이벤트 생성 중 에러가 발생하였습니다.'));
       });
   },
   delete: async (req, res) => {
@@ -75,7 +75,6 @@ const event = {
           resObj.title = result[i].title;
           resObj.text = result[i].text;
           resObj.images = result[i].images;
-          resObj.likes = result[i].likes;
           resObj.firstComeNum = result[i].firstComeNum;
           resObj.rewards = result[i].rewards;
           resObj.status = result[i].status;

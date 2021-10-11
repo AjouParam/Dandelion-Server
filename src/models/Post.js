@@ -39,10 +39,6 @@ const PostSchema = new Schema(
       type: String,
       required: true,
     },
-    likes: {
-      type: Number,
-      default: 0,
-    },
     images: [String],
     comments: {
       type: Number,
