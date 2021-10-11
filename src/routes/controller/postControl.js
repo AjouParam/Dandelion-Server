@@ -1,6 +1,8 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const Post = require('../../models/Post');
+const PostComment = require('../../models/PostComment');
+const PostLike = require('../../models/PostLike');
 const { checkNotExist, checkPost } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
@@ -72,11 +74,13 @@ const post = {
 
     Post.find({ _dandelion: dandelionId })
       .populate({ path: '_user', select: 'name thumbnail' })
-      .select('_id location createdAt updatedAt title text images _dandelion _user likes comments')
+      .select('_id location createdAt updatedAt title text images _dandelion _user ')
       .then((result) => {
         let response = [];
         for (let i = 0; i < result.length; i++) {
           let resObj = {};
+          let comments = await PostComment.count({ _post: result[i]._id });
+          let likes = await PostLike.count({ _post: result[i]._id });
           resObj._id = result[i]._id;
           resObj.location = {};
           resObj.location.longitude = result[i].location.coordinates[0];
@@ -88,8 +92,8 @@ const post = {
           resObj.title = result[i].title;
           resObj.text = result[i].text;
           resObj.images = result[i].images;
-          resObj.likes = result[i].likes;
-          resObj.comments = result[i].comments;
+          resObj.comments = comments;
+          resObj.likes = likes;
           response.push(resObj);
           resObj = null;
         }
@@ -129,6 +133,19 @@ const post = {
         console.log(err);
         return res.json(basicResponse('게시글 수정 중 에러가 발생하였습니다.'));
       });
+  },
+
+  comment: {
+    create: async (req, res) => {},
+    delete: async (req, res) => {},
+    get: async (req, res) => {},
+    update: async (req, res) => {},
+  },
+  nestedComment: {
+    create: async (req, res) => {},
+    delete: async (req, res) => {},
+    get: async (req, res) => {},
+    update: async (req, res) => {},
   },
 };
 

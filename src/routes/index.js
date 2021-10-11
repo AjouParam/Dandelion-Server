@@ -44,6 +44,18 @@ router.delete('/:dandelionId/post/delete/:postId', verifyToken, post.delete);
 router.patch('/:dandelionId/post/update/:postId', verifyToken, post.update);
 router.get('/:dandelionId/post/', verifyToken, post.get);
 
+//민들레 게시글-덧글
+router.post('/:postId/comment/create', verifyToken, post.comment.create);
+router.delete('/:postId/comment/delete/:commentId', verifyToken, post.comment.delete);
+router.patch('/:postId/comment/update/:commentId', verifyToken, post.comment.update);
+router.get('/:postId/comment/', verifyToken, post.comment.get);
+
+//민들레 게시글-답글
+router.post('/:parentCommentId/nestedComment/create', verifyToken, post.nestedComment.create);
+router.delete('/:parentCommentId/nestedComment/delete/:commentId', verifyToken, post.nestedComment.delete);
+router.patch('/:parentCommentId/nestedComment/update/:commentId', verifyToken, post.nestedComment.update);
+router.get('/:parentCommentId/nestedComment/', verifyToken, post.nestedComment.get);
+
 //민들레 이벤트
 router.post('/:dandelionId/event/create', verifyToken, event.create);
 router.delete('/:dandelionId/event/delete/:eventId', verifyToken, event.delete);
