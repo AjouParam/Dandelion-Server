@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const LikeSchema = Schema({
   _post: {
-    type: Schema.types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Post',
     required: true,
   },
@@ -14,6 +14,6 @@ const LikeSchema = Schema({
   },
 });
 
-const Like = mongoose.model('PostLike', LikeSchema);
+const PostLike = mongoose.model('PostLike', LikeSchema);
 
-module.exports = Like;
+module.exports = PostLike;

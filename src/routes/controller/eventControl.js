@@ -52,41 +52,75 @@ const event = {
   },
   get: async (req, res) => {
     const dandelionId = req.params.dandelionId;
+    const page = parseInt(req.query.page);
+    const maxPost = parseInt(req.query.maxPost);
+    const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+
+    if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
-    Event.find({ _dandelion: dandelionId })
-      .populate({ path: '_user', select: 'name thumbnail' })
-      .select(
-        '_id location createdAt updatedAt title text images _dandelion _user likes firstComeNum rewards status startDate',
-      )
+    Event.aggregate([
+      { $match: { _dandelion: mongoose.Types.ObjectId(dandelionId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_user',
+          foreignField: '_id',
+          as: '_user',
+        },
+      },
+      { $unwind: '$_user' },
+      { $sort: { createdAt: -1 } },
+      { $skip: hidePost },
+      { $limit: maxPost },
+      {
+        $lookup: {
+          from: 'eventcomments',
+          localField: '_id',
+          foreignField: '_event',
+          as: 'comments',
+        },
+      },
+      {
+        $lookup: {
+          from: 'eventlikes',
+          localField: '_id',
+          foreignField: '_post',
+          as: 'likes',
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          createdAt: 1,
+          updatedAt: 1,
+          title: 1,
+          text: 1,
+          images: 1,
+          _dandelion: 1,
+          '_user._id': 1,
+          '_user.name': 1,
+          '_user.thumbnail': 1,
+          comments: { $size: '$comments' },
+          likes: { $size: '$likes' },
+          firstComeNum: 1,
+          rewards: 1,
+          status: 1,
+          startDate: 1,
+        },
+      },
+    ])
       .then((result) => {
-        let response = [];
-        for (let i = 0; i < result.length; i++) {
-          let resObj = {};
-          resObj._id = result[i]._id;
-          resObj.location = {};
-          resObj.location.longitude = result[i].location.coordinates[0];
-          resObj.location.latitude = result[i].location.coordinates[1];
-          resObj.createdAt = result[i].createdAt;
-          resObj.updatedAt = result[i].updatedAt;
-          resObj._dandelion = result[i]._dandelion;
-          resObj._user = result[i]._user;
-          resObj.title = result[i].title;
-          resObj.text = result[i].text;
-          resObj.images = result[i].images;
-          resObj.firstComeNum = result[i].firstComeNum;
-          resObj.rewards = result[i].rewards;
-          resObj.status = result[i].status;
-          resObj.startDate = result[i].startDate;
-          response.push(resObj);
-          resObj = null;
-        }
-        res.json(resultResponse('민들레에 해당하는 이벤트입니다.', true, { data: response }));
+        return res.json(resultResponse('민들레에 해당하는 게시글입니다.', true, { data: result }));
       })
       .catch((err) => {
         console.log(err);
-        return res.json(basicResponse('이벤트 가져오는 중 에러가 발생하였습니다.'));
+        return res.json(basicResponse('게시글 가져오는 중 에러가 발생하였습니다.'));
       });
   },
   update: async (req, res) => {

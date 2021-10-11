@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const CommentSchema = Schema({
   _post: {
-    type: Schema.types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Post',
     required: true,
   },
@@ -37,6 +37,6 @@ const CommentSchema = Schema({
   },
 });
 
-const Comment = mongoose.model('PostComment', CommentSchema);
+const PostComment = mongoose.model('PostComment', CommentSchema);
 
-module.exports = Comment;
+module.exports = PostComment;
