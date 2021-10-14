@@ -1,7 +1,7 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const Post = require('../../models/Post');
-const { checkNotExist, checkPost } = require('./Validation/Dandelion');
+const { checkNotExist, checkPost, checkPostNotExist, checkPostComment } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
 
@@ -10,6 +10,10 @@ const post = {
     const userId = req.decoded._id;
     const dandelionId = req.params.dandelionId;
     const { title, text, location, images } = req.body;
+
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
@@ -39,6 +43,11 @@ const post = {
     const userId = req.decoded._id;
     const dandelionId = req.params.dandelionId;
     const postId = req.params.postId;
+
+    if (!mongoose.isValidObjectId(postId)) return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
@@ -54,33 +63,71 @@ const post = {
   },
   get: async (req, res) => {
     const dandelionId = req.params.dandelionId;
+    const page = parseInt(req.query.page);
+    const maxPost = parseInt(req.query.maxPost);
+    const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+
+    if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
+
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
-    Post.find({ _dandelion: dandelionId })
-      .populate({ path: '_user', select: 'name thumbnail' })
-      .select('_id location createdAt updatedAt title text images _dandelion _user likes comments')
+    Post.aggregate([
+      { $match: { _dandelion: mongoose.Types.ObjectId(dandelionId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_user',
+          foreignField: '_id',
+          as: '_user',
+        },
+      },
+      { $unwind: '$_user' },
+      { $sort: { createdAt: -1 } },
+      { $skip: hidePost },
+      { $limit: maxPost },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: '_post',
+          as: 'comments',
+        },
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: '_id',
+          foreignField: '_post',
+          as: 'likes',
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          createdAt: 1,
+          updatedAt: 1,
+          title: 1,
+          text: 1,
+          images: 1,
+          _dandelion: 1,
+          '_user._id': 1,
+          '_user.name': 1,
+          '_user.thumbnail': 1,
+          comments: { $size: '$comments' },
+          likes: { $size: '$likes' },
+          isEvent: 1,
+        },
+      },
+    ])
       .then((result) => {
-        let response = [];
-        for (let i = 0; i < result.length; i++) {
-          let resObj = {};
-          resObj._id = result[i]._id;
-          resObj.location = {};
-          resObj.location.longitude = result[i].location.coordinates[0];
-          resObj.location.latitude = result[i].location.coordinates[1];
-          resObj.createdAt = result[i].createdAt;
-          resObj.updatedAt = result[i].updatedAt;
-          resObj._dandelion = result[i]._dandelion;
-          resObj._user = result[i]._user;
-          resObj.title = result[i].title;
-          resObj.text = result[i].text;
-          resObj.images = result[i].images;
-          resObj.likes = result[i].likes;
-          resObj.comments = result[i].comments;
-          response.push(resObj);
-          resObj = null;
-        }
-        res.json(resultResponse('민들레에 해당하는 게시글입니다.', true, { data: response }));
+        return res.json(resultResponse('민들레에 해당하는 게시글입니다.', true, { data: result }));
       })
       .catch((err) => {
         console.log(err);
@@ -97,7 +144,7 @@ const post = {
 
     if (!mongoose.isValidObjectId(postId)) return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
     if (!mongoose.isValidObjectId(dandelionId))
-      return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
 
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.'));

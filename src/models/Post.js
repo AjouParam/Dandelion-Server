@@ -39,14 +39,23 @@ const PostSchema = new Schema(
       type: String,
       required: true,
     },
-    likes: {
+    images: [String],
+    isEvent: {
+      type: Boolean,
+      default: false,
+    },
+    firstComeNum: {
+      type: Number,
+    },
+    rewards: {
+      type: String,
+    },
+    status: {
       type: Number,
       default: 0,
     },
-    images: [String],
-    comments: {
-      type: Number,
-      default: 0,
+    startDate: {
+      type: Date,
     },
   },
   //{ toObject: { virtuals: true }, toJSON: { virtuals: true } },

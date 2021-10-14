@@ -7,12 +7,6 @@ const dandelion = {
   create: async (req, res) => {
     const userId = req.decoded._id;
     const { name, location, description } = req.body;
-    //validation check 필요
-    // type check와 undefined 아닌지 체크 ✅,✅
-    // name : 한글영어숫자 혼용 공백 포함 8자 이내. ✅
-    // latitude, longitude : 실수 ✅,✅
-    // description : string ✅,✅
-    // 완성해주시고 git wiki까지 작성해주시면 감사하겠습니다 ㅎㅎ
 
     if (!name || !location.latitude || !location.longitude)
       return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
@@ -55,7 +49,7 @@ const dandelion = {
     if (!centerPosition || !maxDistance) return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
 
     if (!centerPosition.latitude || !centerPosition.longitude)
-      return res.json(basicResponse('uppderLeftPosition의 위치 정보가 누락되었습니다.'));
+      return res.json(basicResponse('위치 정보가 누락되었습니다.'));
 
     const positionMessage = await checkPositionType(centerPosition.longitude, centerPosition.latitude);
     if (positionMessage) return res.json(basicResponse('해당 위치에 이미 민들레가 존재합니다.'));
