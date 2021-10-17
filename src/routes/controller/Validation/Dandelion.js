@@ -58,6 +58,16 @@ const checkPostNotExist = async (postId) =>
       return '게시글 Validation 중 에러가 발생하였습니다.';
     });
 
+const checkCommentNotExist = async (commentId) =>
+  Comment.findById(commentId)
+    .then((result) => {
+      return result ? false : true;
+    })
+    .catch((err) => {
+      console.log(err);
+      return '덧글 Validation 중 에러가 발생하였습니다.';
+    });
+
 const checkComment = async (postId, userId, commentId) =>
   Comment.findById(commentId)
     .select('_post _user')
@@ -81,4 +91,5 @@ module.exports = {
   checkPost,
   checkComment,
   checkPostNotExist,
+  checkCommentNotExist,
 };

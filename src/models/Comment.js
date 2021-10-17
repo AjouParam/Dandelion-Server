@@ -12,7 +12,7 @@ const CommentSchema = Schema({
     ref: 'User',
     required: true,
   },
-  parentComment: {
+  _parentComment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment',
   },
@@ -37,6 +37,6 @@ const CommentSchema = Schema({
   },
 });
 
-const PostComment = mongoose.model('Comment', CommentSchema);
+const Comment = mongoose.model('Comment', CommentSchema);
 
-module.exports = PostComment;
+module.exports = Comment;

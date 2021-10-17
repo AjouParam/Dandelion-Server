@@ -62,6 +62,7 @@ const post = {
       });
   },
   get: async (req, res) => {
+    const location = req.body.location; // 사용자 게시글 불러오기 권한 validation 확인
     const dandelionId = req.params.dandelionId;
     const page = parseInt(req.query.page);
     const maxPost = parseInt(req.query.maxPost);
