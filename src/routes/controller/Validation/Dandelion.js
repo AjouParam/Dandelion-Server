@@ -25,8 +25,8 @@ const checkDescriptionType = async (description) =>
     : ``;
 
 const checkAlreadyExist = async (longitude, latitude) =>
-  Dandelion.find({ coordinates: [longitude, latitude] }).then((data) => {
-    return data.length ? true : false;
+  Dandelion.find({ location: { type: 'Point', coordinates: [longitude, latitude] } }).then((data) => {
+    return data.length ? '해당 위치에 이미 민들레가 존재합니다.' : '';
   });
 
 const checkNotExist = async (_id) =>
