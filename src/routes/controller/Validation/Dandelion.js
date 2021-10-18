@@ -73,13 +73,27 @@ const checkComment = async (postId, userId, commentId) =>
     .select('_post _user')
     .then((result) => {
       if (!result) return '존재하지 않는 덧글입니다.';
-      if (postId != result._post) return '덧글 인덱스가 민들레 인덱스와 매치되지 않습니다.';
+      if (postId != result._post) return '덧글 인덱스가 게시글 인덱스와 매치되지 않습니다.';
       if (userId != result._user) return '권한이 없습니다.';
       return '';
     })
     .catch((err) => {
       console.log(err);
       return '덧글 Validation 중 에러가 발생하였습니다.';
+    });
+
+const checkNestedComment = async (parentCommentId, userId, commentId) =>
+  Comment.findById(commentId)
+    .select('_parentComment _user')
+    .then((result) => {
+      if (!result) return '존재하지 않는 답글입니다.';
+      if (parentCommentId != result._parentComment) return '답글 인덱스가 댓글 인덱스와 매치되지 않습니다.';
+      if (userId != result._user) return '권한이 없습니다.';
+      return '';
+    })
+    .catch((err) => {
+      console.log(err);
+      return '답글 Validation 중 에러가 발생하였습니다.';
     });
 
 module.exports = {
@@ -92,4 +106,5 @@ module.exports = {
   checkComment,
   checkPostNotExist,
   checkCommentNotExist,
+  checkNestedComment,
 };

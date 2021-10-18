@@ -1,7 +1,7 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const Comment = require('../../models/Comment');
-const { checkPostNotExist, checkComment, checkCommentNotExist } = require('./Validation/Dandelion');
+const { checkPostNotExist, checkComment, checkCommentNotExist, checkNestedComment } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
 
@@ -35,6 +35,7 @@ const comment = {
     const userId = req.decoded._id;
     const postId = req.params.postId;
     const commentId = req.params.commentId;
+    const location = req.body.location; // 사용자 덧글 불러오기 권한 validation 확인
 
     if (!mongoose.isValidObjectId(postId)) return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
     if (!mongoose.isValidObjectId(commentId)) return res.json(basicResponse('덧글의 Object Id가 올바르지 않습니다.'));
@@ -45,7 +46,12 @@ const comment = {
     const checkCommentMessage = await checkPostComment(postId, userId, commentId);
     if (checkCommentMessage) return res.json(basicResponse(checkCommentMessage));
 
-    Comment.deleteOne({ _id: commentId, _post: postId })
+    Comment.deleteMany({
+      $or: [
+        { _id: commentId, _post: postId },
+        { _parentComment: commentId, _post: postId },
+      ],
+    })
       .then(res.json(basicResponse('덧글을 삭제하였습니다.', true)))
       .catch((err) => {
         console.log(err);
@@ -67,7 +73,7 @@ const comment = {
     if (isPostNotExist) return res.json(basicResponse('해당 게시글이 존재하지 않습니다.', false));
 
     Comment.aggregate([
-      { $match: { _post: mongoose.Types.ObjectId(postId) } },
+      { $match: { _post: mongoose.Types.ObjectId(postId), depth: 1 } },
       {
         $lookup: {
           from: 'users',
@@ -81,6 +87,14 @@ const comment = {
       { $skip: hidePost },
       { $limit: maxPost },
       {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: '_parentComment',
+          as: 'nestedComments',
+        },
+      },
+      {
         $project: {
           createdAt: 1,
           updatedAt: 1,
@@ -91,6 +105,7 @@ const comment = {
           '_user.name': 1,
           '_user.thumbnail': 1,
           depth: 1,
+          nestedComments: { $size: '$nestedComments' },
         },
       },
     ])
@@ -136,7 +151,7 @@ const comment = {
       const location = req.body.location; // 사용자 게시글 작성 권한 validation 확인
 
       if (!mongoose.isValidObjectId(parentCommentId))
-        return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
+        return res.json(basicResponse('덧글의 Object Id가 올바르지 않습니다.'));
 
       //refactoring necessary
       const isCommentNotExist = await checkCommentNotExist(parentCommentId);
@@ -160,9 +175,110 @@ const comment = {
           return res.json(basicResponse('답글 작성 중 에러가 발생하였습니다.'));
         });
     },
-    delete: async (req, res) => {},
-    get: async (req, res) => {},
-    update: async (req, res) => {},
+    delete: async (req, res) => {
+      const userId = req.decoded._id;
+      const parentCommentId = req.params.parentCommentId;
+      const commentId = req.params.commentId;
+      const location = req.body.location; // 사용자 덧글 불러오기 권한 validation 확인
+
+      if (!mongoose.isValidObjectId(parentCommentId))
+        return res.json(basicResponse('덧글의 Object Id가 올바르지 않습니다.'));
+      if (!mongoose.isValidObjectId(commentId)) return res.json(basicResponse('답글의 Object Id가 올바르지 않습니다.'));
+
+      const isCommentNotExist = await checkCommentNotExist(parentCommentId);
+      if (isCommentNotExist) return res.json(basicResponse('해당 덧글이 존재하지 않습니다.'));
+
+      const checkCommentMessage = await checkNestedComment(parentCommentId, userId, commentId);
+      if (checkCommentMessage) return res.json(basicResponse(checkCommentMessage));
+
+      Comment.deleteOne({ _id: commentId, _parentComment: parentCommentId })
+        .then(res.json(basicResponse('답글을 삭제하였습니다.', true)))
+        .catch((err) => {
+          console.log(err);
+          return res.json(basicResponse('답글 삭제 중 에러가 발생하였습니다.'));
+        });
+    },
+    get: async (req, res) => {
+      const parentCommentId = req.params.parentCommentId;
+      const location = req.body.location; // 사용자 덧글 불러오기 권한 validation 확인
+      const page = parseInt(req.query.page);
+      const maxPost = parseInt(req.query.maxPost);
+      const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+
+      if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
+
+      if (!mongoose.isValidObjectId(parentCommentId))
+        return res.json(basicResponse('답글의 Object Id가 올바르지 않습니다.'));
+
+      const isCommentNotExist = await checkCommentNotExist(parentCommentId);
+      if (isCommentNotExist) return res.json(basicResponse('해당 덧글이 존재하지 않습니다.'));
+
+      Comment.aggregate([
+        { $match: { _parentComment: mongoose.Types.ObjectId(parentCommentId) } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_user',
+            foreignField: '_id',
+            as: '_user',
+          },
+        },
+        { $unwind: '$_user' },
+        { $sort: { createdAt: -1 } },
+        { $skip: hidePost },
+        { $limit: maxPost },
+        {
+          $project: {
+            createdAt: 1,
+            updatedAt: 1,
+            title: 1,
+            text: 1,
+            _post: 1,
+            '_user._id': 1,
+            '_user.name': 1,
+            '_user.thumbnail': 1,
+            depth: 1,
+            _parentComment: 1,
+          },
+        },
+      ])
+        .then((result) => {
+          return res.json(resultResponse('댓글에 해당하는 답글입니다.', true, { data: result }));
+        })
+        .catch((err) => {
+          console.log(err);
+          return res.json(basicResponse('답글을 가져오는 중 에러가 발생하였습니다.'));
+        });
+    },
+    update: async (req, res) => {
+      const userId = req.decoded._id;
+      const parentCommentId = req.params.parentCommentId;
+      const commentId = req.params.commentId;
+      const changedText = req.body.text;
+      const location = req.body.location; // 사용자 덧글 불러오기 권한 validation 확인
+
+      if (!mongoose.isValidObjectId(parentCommentId))
+        return res.json(basicResponse('덧글의 Object Id가 올바르지 않습니다.'));
+      if (!mongoose.isValidObjectId(commentId)) return res.json(basicResponse('답글의 Object Id가 올바르지 않습니다.'));
+
+      const isCommentNotExist = await checkCommentNotExist(parentCommentId);
+      if (isCommentNotExist) return res.json(basicResponse('해당 덧글이 존재하지 않습니다.'));
+
+      const checkCommentMessage = await checkNestedComment(parentCommentId, userId, commentId);
+      if (checkCommentMessage) return res.json(basicResponse(checkCommentMessage));
+
+      //답글 location validation
+
+      Comment.updateOne(
+        { _id: commentId, _parentComment: parentCommentId },
+        { text: changedText, updatedAt: await getKoreanTime() },
+      )
+        .then(res.json(basicResponse('답글이 수정되었습니다.', true)))
+        .catch((err) => {
+          console.log(err);
+          return res.json(basicResponse('답글 수정 중 에러가 발생하였습니다.'));
+        });
+    },
   },
 };
 module.exports = comment;
