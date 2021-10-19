@@ -1,7 +1,9 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
+
 const getKoreanTime = async () => {
+  moment.tz.setDefault('Asia/Seoul');
   const curr = new Date();
-  return moment(curr.getTime()).tz('Asia/Seoul');
+  return moment().format();
 };
 
 module.exports = { getKoreanTime };
