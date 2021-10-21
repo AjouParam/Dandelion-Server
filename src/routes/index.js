@@ -3,7 +3,6 @@
 const express = require('express');
 const router = express.Router();
 
-const test = require('./controller/testControl');
 const account = require('./controller/accountControl');
 const dandelion = require('./controller/mainControl');
 const post = require('./controller/postControl');
@@ -63,6 +62,4 @@ router.delete('/:dandelionId/event/delete/:eventId', verifyToken, event.delete);
 router.patch('/:dandelionId/event/update/:eventId', verifyToken, event.update);
 router.get('/:dandelionId/event/', verifyToken, event.get);
 
-//한국시간테스트
-router.get('/koreanTime/', test.get);
 module.exports = router;

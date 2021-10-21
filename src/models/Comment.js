@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-
+const { getKoreanTime } = require('../routes/provider/util');
 const CommentSchema = Schema({
   _post: {
     type: Schema.Types.ObjectId,
@@ -30,10 +30,11 @@ const CommentSchema = Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: getKoreanTime(),
   },
   updatedAt: {
     type: Date,
+    default: getKoreanTime(),
   },
 });
 

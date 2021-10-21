@@ -29,7 +29,7 @@ const post = {
       title,
       text,
       images: images,
-      createdAt: await getKoreanTime(),
+      createdAt: getKoreanTime(),
     });
     newPost
       .save()
@@ -62,7 +62,7 @@ const post = {
       });
   },
   get: async (req, res) => {
-    const location = req.body.location; // 사용자 게시글 불러오기 권한 validation 확인
+    // 사용자 게시글 불러오기 권한 validation 확인
     const dandelionId = req.params.dandelionId;
     const page = parseInt(req.query.page);
     const maxPost = parseInt(req.query.maxPost);
@@ -157,7 +157,7 @@ const post = {
 
     Post.updateOne(
       { _id: postId, _dandelion: dandelionId },
-      { text: changedText, title: changedTitle, updatedAt: await getKoreanTime(), images: images },
+      { text: changedText, title: changedTitle, updatedAt: getKoreanTime(), images: images },
     )
       .then(res.json(basicResponse('게시글이 수정되었습니다.', true)))
       .catch((err) => {

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getKoreanTime } = require('../routes/provider/util');
 mongoose.set('useCreateIndex', true);
 const Schema = mongoose.Schema;
 
@@ -14,11 +15,11 @@ const PostSchema = new Schema(
     },
     createdAt: {
       type: Date,
-      default: Date.now(),
+      default: getKoreanTime(),
     },
     updatedAt: {
       type: Date,
-      default: Date.now(),
+      default: getKoreanTime(),
     },
     location: {
       type: {

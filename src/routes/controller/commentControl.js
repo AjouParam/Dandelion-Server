@@ -21,7 +21,7 @@ const comment = {
       _user: userId,
       _post: postId,
       text: text,
-      createdAt: await getKoreanTime(),
+      createdAt: getKoreanTime(),
     });
     newComment
       .save()
@@ -43,7 +43,7 @@ const comment = {
     const isPostNotExist = await checkPostNotExist(postId);
     if (isPostNotExist) return res.json(basicResponse(isPostNotExist));
 
-    const checkCommentMessage = await checkPostComment(postId, userId, commentId);
+    const checkCommentMessage = await checkComment(postId, userId, commentId);
     if (checkCommentMessage) return res.json(basicResponse(checkCommentMessage));
 
     Comment.deleteMany({
@@ -135,7 +135,7 @@ const comment = {
 
     //덧글 location validation
 
-    Comment.updateOne({ _id: commentId, _post: postId }, { text: changedText, updatedAt: await getKoreanTime() })
+    Comment.updateOne({ _id: commentId, _post: postId }, { text: changedText, updatedAt: getKoreanTime() })
       .then(res.json(basicResponse('덧글이 수정되었습니다.', true)))
       .catch((err) => {
         console.log(err);
@@ -164,7 +164,6 @@ const comment = {
         _user: userId,
         _parentComment: parentCommentId,
         text: text,
-        createdAt: await getKoreanTime(),
         depth: parentComment.depth + 1,
       });
       newComment
@@ -271,7 +270,7 @@ const comment = {
 
       Comment.updateOne(
         { _id: commentId, _parentComment: parentCommentId },
-        { text: changedText, updatedAt: await getKoreanTime() },
+        { text: changedText, updatedAt: getKoreanTime() },
       )
         .then(res.json(basicResponse('답글이 수정되었습니다.', true)))
         .catch((err) => {

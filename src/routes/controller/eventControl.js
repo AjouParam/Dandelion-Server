@@ -10,13 +10,13 @@ const event = {
     const userId = req.decoded._id;
     const dandelionId = req.params.dandelionId;
     const { title, text, location, images, rewards, firstComeNum, startDate } = req.body;
-    const isDandelionNotExist = await checkNotExist(dandelionId);
     // 이벤트 column 요소 validation necessary
     // startDate type validation necessary
     // status 관련해서 startDate와 비교하고 더 전이면 0, .. 선착순 어케? 현재는 status default로 0
-    const dateArray = startDate.split('-');
-    if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
 
+    const dateArray = startDate.split('-');
+    const isDandelionNotExist = await checkNotExist(dandelionId);
+    if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
     const newEvent = new Post({
       _user: userId,
       _dandelion: dandelionId,
@@ -29,8 +29,7 @@ const event = {
       text,
       rewards,
       images: images,
-      createdAt: await getKoreanTime(),
-      startDate: new Date(dateArray[0], dateArray[1], dateArray[2]),
+      startDate: getKoreanTime(dateArray[0], dateArray[1] - 1, dateArray[2]),
       isEvent: true,
     });
     newEvent
@@ -58,7 +57,7 @@ const event = {
       });
   },
   get: async (req, res) => {
-    const location = req.body.location; // 사용자 게시글 불러오기 권한 validation 확인
+    const location = req.body.location; // 사용자 이벤트 불러오기 권한 validation 확인
     const dandelionId = req.params.dandelionId;
     const page = parseInt(req.query.page);
     const maxPost = parseInt(req.query.maxPost);
@@ -124,11 +123,11 @@ const event = {
       },
     ])
       .then((result) => {
-        return res.json(resultResponse('민들레에 해당하는 게시글입니다.', true, { data: result }));
+        return res.json(resultResponse('민들레에 해당하는 이벤트입니다.', true, { data: result }));
       })
       .catch((err) => {
         console.log(err);
-        return res.json(basicResponse('게시글 가져오는 중 에러가 발생하였습니다.'));
+        return res.json(basicResponse('이벤트 가져오는 중 에러가 발생하였습니다.'));
       });
   },
   update: async (req, res) => {
