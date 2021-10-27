@@ -2,7 +2,9 @@ const Dandelion = require('../../../models/Dandelion');
 const Post = require('../../../models/Post');
 const Comment = require('../../../models/Comment');
 const User = require('../../../models/User');
+const Like = require('../../../models/Like');
 let nameRegex = /^[가-힣a-zA-Z0-9\s]{1,10}$/;
+const mongoose = require('mongoose');
 
 const checkPositionNumberType = async (longitude, latitude) =>
   toString.call(longitude) === '[object Number]' && toString.call(latitude) === '[object Number]' ? false : true;
@@ -107,6 +109,16 @@ const checkUserExist = async (userId) =>
       return '사용자 존재 확인하는 Validation 중 에러가 발생하였습니다.';
     });
 
+const checkLikeExist = async (userId, postId) =>
+  Like.findOne({ _post: postId, _user: userId })
+    .then((result) => {
+      return result ? true : false;
+    })
+    .catch((err) => {
+      console.log(err);
+      return '좋아요가 이미 있는지 확인하는 Validation 중 에러가 발생하였습니다.';
+    });
+
 module.exports = {
   checkNameType,
   checkPositionType,
@@ -119,4 +131,5 @@ module.exports = {
   checkCommentNotExist,
   checkNestedComment,
   checkUserExist,
+  checkLikeExist,
 };

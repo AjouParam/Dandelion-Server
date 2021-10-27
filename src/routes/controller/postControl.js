@@ -8,6 +8,7 @@ const {
   checkPostNotExist,
   checkPostComment,
   checkUserExist,
+  checkLikeExist,
 } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
@@ -189,17 +190,29 @@ const post = {
     const isPostNotExist = await checkPostNotExist(postId);
     if (isPostNotExist) return res.json(basicResponse('해당 게시글이 존재하지 않습니다.'));
 
-    const newLike = new Like({
-      _user: userId,
-      _post: postId,
-    });
-    newLike
-      .save()
-      .then((result) => res.json(resultResponse('좋아요를 완료하였습니다.', true, { data: result })))
-      .catch((err) => {
-        console.log(err);
-        return res.json(basicResponse('게시글 좋아요 중 에러가 발생하였습니다.'));
+    const isLikeExist = await checkLikeExist(userId, postId);
+    if (isLikeExist) {
+      Like.deleteOne({ _user: userId, _post: postId })
+        .then(res.json(resultResponse('좋아요를 취소했습니다.', true, { data: { currentLikeStatus: false } })))
+        .catch((err) => {
+          console.log(err);
+          return res.json(basicResponse('좋아요 취소 중 에러가 발생하였습니다.'));
+        });
+    } else {
+      const newLike = new Like({
+        _user: userId,
+        _post: postId,
       });
+      newLike
+        .save()
+        .then((result) =>
+          res.json(resultResponse('좋아요를 완료하였습니다.', true, { data: { currentLikeStatus: true } })),
+        )
+        .catch((err) => {
+          console.log(err);
+          return res.json(basicResponse('좋아요 생성 중 에러가 발생하였습니다.'));
+        });
+    }
   },
   getDetail: async (req, res) => {
     const userId = req.decoded._id;

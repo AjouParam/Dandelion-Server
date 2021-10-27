@@ -23,7 +23,6 @@ const dandelion = {
     const ExistPositionMessage = await checkAlreadyExist(location.longitude, location.latitude);
     if (ExistPositionMessage) return res.json(basicResponse(ExistPositionMessage));
 
-    //한국 시간 해결 안됨..
     const newDandelion = new Dandelion({
       name,
       _creator: userId,
@@ -33,7 +32,6 @@ const dandelion = {
       },
       description,
       level: 1,
-      createdAt: await getKoreanTime(),
     });
     newDandelion
       .save()
