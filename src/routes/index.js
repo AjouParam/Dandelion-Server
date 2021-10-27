@@ -44,6 +44,11 @@ router.delete('/:dandelionId/post/delete/:postId', verifyToken, post.delete);
 router.patch('/:dandelionId/post/update/:postId', verifyToken, post.update);
 router.get('/:dandelionId/post/', verifyToken, post.get);
 
+//민들레 게시글/이벤트 상세 조회
+router.get('/:dandelionId/:postId/detail', verifyToken, post.getDetail);
+//민들레 게시글/이벤트 좋아요
+router.post('/:dandelionId/:postId/like', verifyToken, post.like);
+
 //민들레 게시글-덧글
 router.post('/:postId/comment/create', verifyToken, comment.create);
 router.delete('/:postId/comment/delete/:commentId', verifyToken, comment.delete);

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getKoreanTime } = require('../routes/provider/util');
 const Schema = mongoose.Schema;
 
 const LikeSchema = Schema({
@@ -12,8 +13,12 @@ const LikeSchema = Schema({
     ref: 'User',
     required: true,
   },
+  createdAt: {
+    type: Date,
+    default: getKoreanTime(),
+  },
 });
 
-const PostLike = mongoose.model('PostLike', LikeSchema);
+const PostLike = mongoose.model('Like', LikeSchema);
 
 module.exports = PostLike;

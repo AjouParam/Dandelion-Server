@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getKoreanTime } = require('../routes/provider/util');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
@@ -13,6 +14,10 @@ const UserSchema = new Schema({
   seeds: {
     type: Number,
     default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: getKoreanTime(),
   },
 });
 

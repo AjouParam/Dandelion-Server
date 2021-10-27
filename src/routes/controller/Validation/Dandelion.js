@@ -1,6 +1,7 @@
 const Dandelion = require('../../../models/Dandelion');
 const Post = require('../../../models/Post');
 const Comment = require('../../../models/Comment');
+const User = require('../../../models/User');
 let nameRegex = /^[가-힣a-zA-Z0-9\s]{1,10}$/;
 
 const checkPositionNumberType = async (longitude, latitude) =>
@@ -96,6 +97,16 @@ const checkNestedComment = async (parentCommentId, userId, commentId) =>
       return '답글 Validation 중 에러가 발생하였습니다.';
     });
 
+const checkUserExist = async (userId) =>
+  User.findById(userId)
+    .then((result) => {
+      return result ? true : false;
+    })
+    .catch((err) => {
+      console.log(err);
+      return '사용자 존재 확인하는 Validation 중 에러가 발생하였습니다.';
+    });
+
 module.exports = {
   checkNameType,
   checkPositionType,
@@ -107,4 +118,5 @@ module.exports = {
   checkPostNotExist,
   checkCommentNotExist,
   checkNestedComment,
+  checkUserExist,
 };

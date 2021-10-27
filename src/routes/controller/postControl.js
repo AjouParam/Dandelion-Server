@@ -1,7 +1,14 @@
 const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const Post = require('../../models/Post');
-const { checkNotExist, checkPost, checkPostNotExist, checkPostComment } = require('./Validation/Dandelion');
+const Like = require('../../models/Like');
+const {
+  checkNotExist,
+  checkPost,
+  checkPostNotExist,
+  checkPostComment,
+  checkUserExist,
+} = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
 
@@ -29,7 +36,6 @@ const post = {
       title,
       text,
       images: images,
-      createdAt: getKoreanTime(),
     });
     newPost
       .save()
@@ -163,6 +169,106 @@ const post = {
       .catch((err) => {
         console.log(err);
         return res.json(basicResponse('게시글 수정 중 에러가 발생하였습니다.'));
+      });
+  },
+  like: async (req, res) => {
+    const userId = req.decoded._id;
+    const dandelionId = req.params.dandelionId;
+    const postId = req.params.postId;
+
+    const isUserExist = await checkUserExist(userId);
+    if (!isUserExist) return res.json(basicResponse('존재하지 않는 사용자입니다.'));
+
+    if (!mongoose.isValidObjectId(postId)) return res.json(basicResponse('게시글의 Object Id가 올바르지 않습니다.'));
+    if (!mongoose.isValidObjectId(dandelionId))
+      return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
+
+    const isDandelionNotExist = await checkNotExist(dandelionId);
+    if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.'));
+
+    const isPostNotExist = await checkPostNotExist(postId);
+    if (isPostNotExist) return res.json(basicResponse('해당 게시글이 존재하지 않습니다.'));
+
+    const newLike = new Like({
+      _user: userId,
+      _post: postId,
+    });
+    newLike
+      .save()
+      .then((result) => res.json(resultResponse('좋아요를 완료하였습니다.', true, { data: result })))
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('게시글 좋아요 중 에러가 발생하였습니다.'));
+      });
+  },
+  getDetail: async (req, res) => {
+    const userId = req.decoded._id;
+    const dandelionId = req.params.dandelionId;
+    const postId = req.params.postId;
+
+    const isUserExist = await checkUserExist(userId);
+    if (!isUserExist) return res.json(basicResponse('존재하지 않는 사용자입니다.'));
+
+    const isDandelionNotExist = await checkNotExist(dandelionId);
+    if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.'));
+
+    const isPostNotExist = await checkPostNotExist(postId);
+    if (isPostNotExist) return res.json(basicResponse('해당 게시글이 존재하지 않습니다.'));
+
+    Post.aggregate([
+      { $match: { _dandelion: mongoose.Types.ObjectId(dandelionId), _id: mongoose.Types.ObjectId(postId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_user',
+          foreignField: '_id',
+          as: '_user',
+        },
+      },
+      { $unwind: '$_user' },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: '_post',
+          as: 'comments',
+        },
+      },
+      {
+        $lookup: {
+          from: 'likes',
+          localField: '_id',
+          foreignField: '_post',
+          as: 'likes',
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          createdAt: 1,
+          updatedAt: 1,
+          title: 1,
+          text: 1,
+          images: 1,
+          _dandelion: 1,
+          '_user._id': 1,
+          '_user.name': 1,
+          '_user.thumbnail': 1,
+          comments: { $size: '$comments' },
+          likes: { $size: '$likes' },
+          isEvent: 1,
+        },
+      },
+    ])
+      .then((result) => {
+        return res.json(resultResponse('게시글 상세 정보입니다.', true, { data: result }));
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('게시글 가져오는 중 에러가 발생하였습니다.'));
       });
   },
 };
