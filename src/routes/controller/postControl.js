@@ -277,7 +277,7 @@ const post = {
       },
     ])
       .then((result) => {
-        return res.json(resultResponse('게시글 상세 정보입니다.', true, { data: result }));
+        return res.json(resultResponse('게시글 상세 정보입니다.', true, { data: result[0] }));
       })
       .catch((err) => {
         console.log(err);
