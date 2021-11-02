@@ -8,6 +8,7 @@ const dandelion = require('./controller/mainControl');
 const post = require('./controller/postControl');
 const event = require('./controller/eventControl');
 const comment = require('./controller/commentControl');
+const myPage = require('./controller/mypageControl');
 const verifyToken = require('./provider/verifyToken');
 
 //account
@@ -67,4 +68,8 @@ router.delete('/:dandelionId/event/delete/:eventId', verifyToken, event.delete);
 router.patch('/:dandelionId/event/update/:eventId', verifyToken, event.update);
 router.get('/:dandelionId/event/', verifyToken, event.get);
 
+//내가 쓴 글 조회
+router.get('/dandelion/post/get/', verifyToken, myPage.getMyPost);
+//내가 심은 민들레 조회
+router.get('/dandelion/get/', verifyToken, myPage.getMyDandelion);
 module.exports = router;
