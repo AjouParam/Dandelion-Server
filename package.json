@@ -10,6 +10,7 @@
   "author": "param",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.1019.0",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -21,9 +22,13 @@
     "moment-timezone": "^0.5.33",
     "mongoose": "^5.13.7",
     "morgan": "^1.10.0",
+    "multer": "^1.4.3",
+    "multer-s3": "^2.10.0",
+    "multer-s3-transform": "^2.10.3",
     "nodemailer": "^6.6.3",
     "nodemon": "^2.0.12",
     "passport": "^0.4.1",
-    "passport-google-oauth2": "^0.2.0"
+    "passport-google-oauth2": "^0.2.0",
+    "path": "^0.12.7"
   }
 }
