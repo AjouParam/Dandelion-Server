@@ -15,7 +15,6 @@ const mongoose = require('mongoose');
 
 const myPage = {
   getMyPost: async (req, res) => {
-    // 사용자 게시글 불러오기 권한 validation 확인
     // 사용자 자체 validation 확인
     const userId = req.decoded._id;
     const page = parseInt(req.query.page);
@@ -25,7 +24,7 @@ const myPage = {
     if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
 
     Post.aggregate([
-      { $match: { _user: mongoose.Types.ObjectId(userId) } },
+      { $match: { _user: mongoose.Types.ObjectId(userId), isEvent: false } },
       {
         $lookup: {
           from: 'users',
@@ -83,7 +82,88 @@ const myPage = {
         return res.json(basicResponse('내가 작성한 게시글을 가져오는 중 에러가 발생하였습니다.'));
       });
   },
-  getMyDandelion: async (req, res) => {},
+  getMyDandelion: async (req, res) => {
+    // 사용자 자체 validation 확인
+    const userId = req.decoded._id;
+    const page = parseInt(req.query.page);
+    const maxPost = parseInt(req.query.maxPost);
+    const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+    const centerPosition = req.body.centerPosition;
+    console.log(centerPosition);
+
+    if (!centerPosition) return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
+
+    if (!centerPosition.latitude || !centerPosition.longitude)
+      return res.json(basicResponse('위치 정보가 누락되었습니다.'));
+
+    if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
+
+    Dandelion.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [centerPosition.longitude, centerPosition.latitude] },
+          spherical: true,
+          distanceField: 'distance',
+          distanceMuliplier: 0.001,
+          query: { _creator: mongoose.Types.ObjectId(userId) },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_creator',
+          foreignField: '_id',
+          as: '_creator',
+        },
+      },
+      { $unwind: '$_creator' },
+      { $sort: { createdAt: -1, distasnce: 1 } },
+      { $skip: hidePost },
+      { $limit: maxPost },
+      {
+        $lookup: {
+          from: 'posts',
+          as: 'events',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$_dandelion', '$$id'] }, { $eq: ['$isEvent', true] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          createdAt: 1,
+          description: 1,
+          level: 1,
+          distance: 1,
+          cumulativeVisitors: 1,
+          address: 1,
+          '_creator._id': 1,
+          '_creator.name': 1,
+          '_creator.thumbnail': 1,
+          events: { $size: '$events' },
+          name: 1,
+        },
+      },
+    ])
+      .then((result) => {
+        return res.json(resultResponse('내가 심은 민들레입니다.', true, { data: result }));
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('내가 심은 민들레를 가져오는 중 에러가 발생하였습니다.'));
+      });
+  },
 };
 
 module.exports = myPage;

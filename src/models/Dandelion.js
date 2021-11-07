@@ -10,14 +10,6 @@ const DandelionSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  _parent: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Dandelion',
-  },
-  _child: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Dandelion',
-  },
   createdAt: {
     type: Date,
     default: getKoreanTime(),
@@ -39,6 +31,14 @@ const DandelionSchema = new Schema({
   },
   address: String,
   description: String,
+  cumulativeVisitors: {
+    type: Number,
+    default: 0,
+  },
+  realTimeVisitors: {
+    type: Number,
+    default: 0,
+  },
 });
 DandelionSchema.index({ location: '2dsphere' });
 const Dandelion = mongoose.model('Dandelion', DandelionSchema);

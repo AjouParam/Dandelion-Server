@@ -69,7 +69,7 @@ router.patch('/:dandelionId/event/update/:eventId', verifyToken, event.update);
 router.get('/:dandelionId/event/', verifyToken, event.get);
 
 //내가 쓴 글 조회
-router.get('/dandelion/post/get/', verifyToken, myPage.getMyPost);
+router.get('/dandelion/post/get/mine', verifyToken, myPage.getMyPost);
 //내가 심은 민들레 조회
-router.get('/dandelion/get/', verifyToken, myPage.getMyDandelion);
+router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
 module.exports = router;

@@ -16,7 +16,7 @@ const storage = multerS3({
   s3: s3,
   bucket: 'paramdandelion', //bucket 이름
   contentType: multerS3.AUTO_CONTENT_TYPE,
-  acl: 'public-read-write', //읽고 쓰기 모두 허용
+  acl: 'public-read', //읽고 쓰기 모두 허용
   key: function (req, file, cb) {
     let extension = path.extname(file.originalname);
     cb(null, Date.now().toString() + extension);

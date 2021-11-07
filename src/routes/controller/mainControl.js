@@ -49,9 +49,6 @@ const dandelion = {
     if (!centerPosition.latitude || !centerPosition.longitude)
       return res.json(basicResponse('위치 정보가 누락되었습니다.'));
 
-    const positionMessage = await checkPositionType(centerPosition.longitude, centerPosition.latitude);
-    if (positionMessage) return res.json(basicResponse('해당 위치에 이미 민들레가 존재합니다.'));
-
     Dandelion.find({
       location: {
         $near: {
