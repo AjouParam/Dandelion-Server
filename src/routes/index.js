@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const { upload } = require('../config/upload');
 const router = express.Router();
 
 const account = require('./controller/accountControl');
@@ -72,4 +73,15 @@ router.get('/:dandelionId/event/', verifyToken, event.get);
 router.get('/dandelion/post/get/mine', verifyToken, myPage.getMyPost);
 //내가 심은 민들레 조회
 router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
+//게시글 이미지 업로드 api
+router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), (req, res) => {
+  //컨트롤러로 빼서 validation 실패시 다시 지우기.
+  //post면 해당 post 정보 업데이트.
+  //thumbnail이면 해당 user 정보 업데이트.
+
+  console.log(req.files);
+  console.log(req.body);
+  res.json({ msg: '성공' });
+});
+
 module.exports = router;
