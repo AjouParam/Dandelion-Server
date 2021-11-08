@@ -99,6 +99,22 @@ const event = {
         },
       },
       {
+        $lookup: {
+          from: 'likes',
+          as: 'userLike',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$_post', '$$id'] }, { $eq: ['$_user', mongoose.Types.ObjectId(userId)] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
         $project: {
           location: {
             longitude: { $arrayElemAt: ['$location.coordinates', 0] },
@@ -119,6 +135,15 @@ const event = {
           rewards: 1,
           status: 1,
           startDate: 1,
+          userLike: {
+            $switch: {
+              branches: [
+                { case: { $gt: [{ $size: { $ifNull: ['$userLike', []] } }, 0] }, then: true },
+                { case: { $lt: [{ $size: { $ifNull: ['$userLike', []] } }, 1] }, then: false },
+              ],
+              default: false,
+            },
+          },
         },
       },
     ])
