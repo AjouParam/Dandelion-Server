@@ -62,6 +62,7 @@ const event = {
     const page = parseInt(req.query.page);
     const maxPost = parseInt(req.query.maxPost);
     const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+    const userId = req.decoded._id;
 
     if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
 
