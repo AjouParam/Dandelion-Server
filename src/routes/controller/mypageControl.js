@@ -54,6 +54,22 @@ const myPage = {
         },
       },
       {
+        $lookup: {
+          from: 'likes',
+          as: 'userLike',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$_post', '$$id'] }, { $eq: ['$_user', mongoose.Types.ObjectId(userId)] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
         $project: {
           location: {
             longitude: { $arrayElemAt: ['$location.coordinates', 0] },
@@ -71,6 +87,15 @@ const myPage = {
           comments: { $size: '$comments' },
           likes: { $size: '$likes' },
           isEvent: 1,
+          userLike: {
+            $switch: {
+              branches: [
+                { case: { $gt: [{ $size: { $ifNull: ['$userLike', []] } }, 0] }, then: true },
+                { case: { $lt: [{ $size: { $ifNull: ['$userLike', []] } }, 1] }, then: false },
+              ],
+              default: false,
+            },
+          },
         },
       },
     ])
@@ -88,12 +113,11 @@ const myPage = {
     const page = parseInt(req.query.page);
     const maxPost = parseInt(req.query.maxPost);
     const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
-    const centerPosition = req.body.centerPosition;
-    console.log(centerPosition);
+    const currentPosition = req.body.currentPosition;
 
-    if (!centerPosition) return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
+    if (!currentPosition) return res.json(basicResponse('Request Body에 정보가 누락되었습니다.'));
 
-    if (!centerPosition.latitude || !centerPosition.longitude)
+    if (!currentPosition.latitude || !currentPosition.longitude)
       return res.json(basicResponse('위치 정보가 누락되었습니다.'));
 
     if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
@@ -101,7 +125,7 @@ const myPage = {
     Dandelion.aggregate([
       {
         $geoNear: {
-          near: { type: 'Point', coordinates: [centerPosition.longitude, centerPosition.latitude] },
+          near: { type: 'Point', coordinates: [currentPosition.longitude, currentPosition.latitude] },
           spherical: true,
           distanceField: 'distance',
           distanceMuliplier: 0.001,

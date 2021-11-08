@@ -10,6 +10,7 @@ const post = require('./controller/postControl');
 const event = require('./controller/eventControl');
 const comment = require('./controller/commentControl');
 const myPage = require('./controller/mypageControl');
+const uploadImages = require('./controller/imageControl');
 const verifyToken = require('./provider/verifyToken');
 
 //account
@@ -74,14 +75,6 @@ router.get('/dandelion/post/get/mine', verifyToken, myPage.getMyPost);
 //내가 심은 민들레 조회
 router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
 //게시글 이미지 업로드 api
-router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), (req, res) => {
-  //컨트롤러로 빼서 validation 실패시 다시 지우기.
-  //post면 해당 post 정보 업데이트.
-  //thumbnail이면 해당 user 정보 업데이트.
-
-  console.log(req.files);
-  console.log(req.body);
-  res.json({ msg: '성공' });
-});
+router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), uploadImages.toPost);
 
 module.exports = router;
