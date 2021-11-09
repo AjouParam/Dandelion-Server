@@ -29,6 +29,7 @@
     "nodemon": "^2.0.12",
     "passport": "^0.4.1",
     "passport-google-oauth2": "^0.2.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "socket.io": "^4.3.2"
   }
 }
