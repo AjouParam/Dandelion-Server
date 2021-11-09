@@ -1,5 +1,5 @@
 version: 0.0
 os: linux
 files:
-  - source: /home/ubuntu/Dandelion-Server/
+  - source: /
     destination: /home/ubuntu/build/
