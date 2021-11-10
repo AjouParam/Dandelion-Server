@@ -22,8 +22,8 @@ const upload = multer({
     key: function (req, file, cb) {
       let extension = path.extname(file.originalname);
       const destination = req.params.destination;
-      if (!destination) cb('이미지가 저장될 폴더가 누락되었습니다.', null);
-      cb(null, destination + '/' + Date.now().toString() + extension);
+      if (!destination) return cb('이미지가 저장될 폴더가 누락되었습니다.', null);
+      cb(null, destination + '/' + process.hrtime.bigint().toString() + extension);
     },
   }),
 });

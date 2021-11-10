@@ -76,5 +76,6 @@ router.get('/dandelion/post/get/mine', verifyToken, myPage.getMyPost);
 router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
 //게시글 이미지 업로드 api
 router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), uploadImages.toPost);
-
+//사용자 프로필 업로드 api
+router.post('/account/images/:destination', verifyToken, upload.array('images', 1), uploadImages.toThumbnail);
 module.exports = router;
