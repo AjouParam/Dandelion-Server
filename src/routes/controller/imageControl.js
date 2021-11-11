@@ -64,7 +64,6 @@ const uploadImages = {
       await Post.findById(postId)
         .select('images')
         .then((result) => {
-          console.log(result);
           if (result.images.length) {
             //해당 게시글의 기존 사진들 s3에서 삭제
             let files = [];
