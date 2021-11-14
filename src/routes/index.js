@@ -12,6 +12,7 @@ const comment = require('./controller/commentControl');
 const myPage = require('./controller/mypageControl');
 const uploadImages = require('./controller/imageControl');
 const verifyToken = require('./provider/verifyToken');
+const mail = require('./controller/mailControl');
 
 //account
 //회원가입
@@ -76,5 +77,10 @@ router.get('/dandelion/post/get/mine', verifyToken, myPage.getMyPost);
 router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
 //게시글 이미지 업로드 api
 router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), uploadImages.toPost);
+
+router.post('/mail/create', mail.create);
+router.post('/mail/load', mail.load);
+router.post('/mail/loadDetail', mail.loadDetail);
+router.post('/mail/save', mail.save);
 
 module.exports = router;
