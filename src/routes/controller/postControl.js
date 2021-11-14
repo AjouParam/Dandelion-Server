@@ -6,9 +6,9 @@ const {
   checkNotExist,
   checkPost,
   checkPostNotExist,
-  checkPostComment,
   checkUserExist,
   checkLikeExist,
+  checkPositionType,
 } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const mongoose = require('mongoose');
@@ -22,8 +22,13 @@ const post = {
     if (!mongoose.isValidObjectId(dandelionId))
       return res.json(basicResponse('민들레의 Object Id가 올바르지 않습니다.'));
 
+    if (!location) return res.json(BasicResponse('위치 정보가 누락되었습니다.'));
+
     const isDandelionNotExist = await checkNotExist(dandelionId);
     if (isDandelionNotExist) return res.json(basicResponse('해당 민들레가 존재하지 않습니다.', false));
+
+    const positionMessage = await checkPositionType(location.longitude, location.latitude);
+    if (positionMessage) return res.json(basicResponse(positionMessage));
 
     //게시글 location validation
 

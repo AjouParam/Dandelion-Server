@@ -37,7 +37,12 @@ router.get('/account/regenerateToken', verifyToken, account.regenerateToken);
 router.post('/dandelion/create', verifyToken, dandelion.create);
 //좌표 범위 내의 민들레 불러오기
 router.post('/dandelion/get', verifyToken, dandelion.get);
-
+//민들레 클릭
+router.post('/dandelion/getDetail/:dandelionId', verifyToken, dandelion.getDetail);
+//민들레 방문
+//router.get('/dandelion/visit/:dandelionId', verifyToken, dandelion.visit);
+//민들레 나감
+//router.get('/dandelion/exit/:dandelionId', verifyToken, dandelion.exit);
 //민들레 성장, 실시간 방문자 수 부분
 
 //민들레 상세

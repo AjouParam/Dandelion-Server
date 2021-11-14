@@ -141,7 +141,7 @@ const myPage = {
         },
       },
       { $unwind: '$_creator' },
-      { $sort: { createdAt: -1, distasnce: 1 } },
+      { $sort: { createdAt: -1, distance: 1 } },
       { $skip: hidePost },
       { $limit: maxPost },
       {
@@ -171,6 +171,7 @@ const myPage = {
           level: 1,
           distance: 1,
           cumulativeVisitors: 1,
+          realTimeVisitors: 1,
           address: 1,
           '_creator._id': 1,
           '_creator.name': 1,

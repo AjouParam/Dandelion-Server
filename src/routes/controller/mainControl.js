@@ -2,6 +2,7 @@ const Dandelion = require('../../models/Dandelion');
 const { resultResponse, basicResponse } = require('../../config/response');
 const { checkNameType, checkPositionType, checkDescriptionType, checkAlreadyExist } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
+const mongoose = require('mongoose');
 
 const dandelion = {
   create: async (req, res) => {
@@ -81,6 +82,82 @@ const dandelion = {
       .catch((err) => {
         console.log(err);
         return res.json(basicResponse('민들레 불러오기 중 에러가 발생하였습니다.'));
+      });
+  },
+
+  getDetail: async (req, res) => {
+    const dandelionId = req.params.dandelionId;
+    const userId = req.decoded._id;
+    const { currentPosition, maxDistance } = req.body;
+
+    if (!dandelionId) return res.json(basicResponse('민들레 Id 정보가 누락되었습니다.'));
+    if (!currentPosition || !currentPosition.latitude || !currentPosition.longitude)
+      return res.json(basicResponse('위치 정보가 누락되었습니다.'));
+
+    Dandelion.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [currentPosition.longitude, currentPosition.latitude] },
+          spherical: true,
+          distanceField: 'distance',
+          distanceMuliplier: 0.001,
+          query: { _id: mongoose.Types.ObjectId(dandelionId) },
+          maxDistance: 470000000,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_creator',
+          foreignField: '_id',
+          as: '_creator',
+        },
+      },
+      { $unwind: '$_creator' },
+      { $sort: { createdAt: -1, distance: 1 } },
+      {
+        $lookup: {
+          from: 'posts',
+          as: 'events',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$_dandelion', '$$id'] }, { $eq: ['$isEvent', true] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          createdAt: 1,
+          description: 1,
+          level: 1,
+          distance: 1,
+          cumulativeVisitors: 1,
+          realTimeVisitors: 1,
+          address: 1,
+          '_creator._id': 1,
+          '_creator.name': 1,
+          '_creator.thumbnail': 1,
+          events: { $size: '$events' },
+          name: 1,
+        },
+      },
+    ])
+      .then((result) => {
+        return res.json(resultResponse('민들레 상세 정보입니다.', true, { data: result }));
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('민들레 상세 정보를 가져오는 중 에러가 발생하였습니다.'));
       });
   },
 };
