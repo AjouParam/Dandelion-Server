@@ -4,6 +4,7 @@ const User = require('../../models/User');
 const { checkPostNotExist, checkUserExist } = require('./Validation/Dandelion');
 const { getKoreanTime } = require('../provider/util');
 const { s3 } = require('../../config/upload');
+require('dotenv').config();
 
 const getUploadedInfo = (files) => {
   let fileList = [];
@@ -120,7 +121,7 @@ const uploadImages = {
       await User.findById(userId)
         .select('thumbnail')
         .then((result) => {
-          if (result.thumbnail) {
+          if (result.thumbnail && result.thumbnail != process.env.DEFAULT_PROFILE) {
             //유저 이미지가 잇고 그게 기본 이미지 프로필이 아니라면,
             const key = result.thumbnail.split('.com/')[1];
             deleteImages([{ Key: key }]);

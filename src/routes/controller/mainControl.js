@@ -281,6 +281,23 @@ const dandelion = {
       return res.json(basicResponse('민들레 방문 모듈에서 에러가 발생하였습니다. ' + error));
     }
   },
+  exit: async (req, res) => {
+    const dandelionId = req.params.dandelionId;
+    const userId = req.decoded._id;
+
+    if (!dandelionId) return res.json(basicResponse('민들레 Id 정보가 누락되었습니다.'));
+
+    try {
+      await Dandelion.updateOne({ _id: dandelionId }, { $inc: { realTimeVisitors: -1 } }).catch((error) => {
+        console.log(error);
+        throw '민들레 실시간 방문자 수를 감소하는 중에 에러가 발생하였습니다. error:' + error;
+      });
+      return res.json(basicResponse('민들레 실시간 방문자 수가 1 감소하였습니다.', true));
+    } catch (err) {
+      console.log(error);
+      return res.json(basicResponse('민들레 나감 모듈에서 에러가 발생하였습니다. ' + err));
+    }
+  },
 };
 
 module.exports = dandelion;
