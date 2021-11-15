@@ -171,12 +171,24 @@ const dandelion = {
       return res.json(basicResponse('위치 정보가 누락되었습니다.'));
 
     try {
-      await Dandelion.updateOne({ _id: dandelionId }, { $inc: { cumulativeVisitors: 1, realTimeVisitors: 1 } }).catch(
-        (error) => {
-          console.log(error);
-          throw '민들레 방문자 수를 증가하는 중에 에러가 발생하였습니다.\nerror:' + error;
-        },
-      );
+      let { cumulativeVisitors } = await Dandelion.findById(dandelionId).select('cumulativeVisitors');
+      let isGrowUp = false;
+      if (cumulativeVisitors && (cumulativeVisitors == 9 || cumulativeVisitors == 39 || cumulativeVisitors == 99)) {
+        isGrowUp = true;
+      }
+
+      let updateParam = isGrowUp
+        ? {
+            $inc: { cumulativeVisitors: 1, realTimeVisitors: 1, level: 1 },
+          }
+        : {
+            $inc: { cumulativeVisitors: 1, realTimeVisitors: 1 },
+          };
+
+      await Dandelion.updateOne({ _id: dandelionId }, updateParam).catch((error) => {
+        console.log(error);
+        throw '민들레 방문자 수를 증가하는 중에 에러가 발생하였습니다.\nerror:' + error;
+      });
 
       const newVisitHistory = new VisitHistory({
         _user: userId,
