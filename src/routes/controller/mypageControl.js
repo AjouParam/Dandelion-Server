@@ -172,7 +172,6 @@ const myPage = {
           distance: 1,
           cumulativeVisitors: 1,
           realTimeVisitors: 1,
-          address: 1,
           '_creator._id': 1,
           '_creator.name': 1,
           '_creator.thumbnail': 1,

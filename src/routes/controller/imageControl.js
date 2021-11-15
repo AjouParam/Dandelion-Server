@@ -76,13 +76,13 @@ const uploadImages = {
         })
         .catch((err) => {
           console.log(err);
-          return res.json(basicResponse('기존 게시글 이미지 삭제 중 에러가 발생하였습니다.'));
+          throw '기존 게시글 이미지 삭제 중 에러가 발생하였습니다.';
         });
       await Post.updateOne({ _id: postId }, { images: urlList })
         .then()
         .catch((err) => {
           console.log(err);
-          return res.json(basicResponse('게시글 이미지 링크 업데이트 중 에러가 발생하였습니다.'));
+          throw '게시글 이미지 링크 업데이트 중 에러가 발생하였습니다.';
         });
 
       return res.json(resultResponse('이미지를 성공적으로 저장했습니다.', true, { data: fileList }));
@@ -128,14 +128,14 @@ const uploadImages = {
         })
         .catch((err) => {
           console.log(err);
-          return res.json(basicResponse('기존 사용자 이미지 프로필 삭제 중 에러가 발생하였습니다.'));
+          throw '기존 사용자 이미지 프로필 삭제 중 에러가 발생하였습니다.\n' + err;
         });
 
       await User.updateOne({ _id: userId }, { thumbnail: imageUrl })
         .then()
         .catch((err) => {
           console.log(err);
-          return res.json(basicResponse('사용자 이미지 업데이트 중 에러가 발생하였습니다.'));
+          throw '사용자 이미지 업데이트 중 에러가 발생하였습니다.\n' + err;
         });
 
       return res.json(resultResponse('사용자 이미지를 성공적으로 저장했습니다.', true, { data: fileList }));

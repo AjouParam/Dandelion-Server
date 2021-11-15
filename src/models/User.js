@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { getKoreanTime } = require('../routes/provider/util');
 const Schema = mongoose.Schema;
-
+require('dotenv').config();
 const UserSchema = new Schema({
   name: String,
   email: String,
@@ -10,7 +10,10 @@ const UserSchema = new Schema({
     type: Number,
     default: 0,
   },
-  thumbnail: String,
+  thumbnail: {
+    type: String,
+    default: process.env.DEFAULT_PROFILE,
+  },
   seeds: {
     type: Number,
     default: 0,
