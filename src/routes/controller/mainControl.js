@@ -153,6 +153,7 @@ const dandelion = {
       },
     ])
       .then((result) => {
+        //result[0] 으로 해야 배열 없앰.
         return res.json(resultResponse('민들레 상세 정보입니다.', true, { data: result }));
       })
       .catch((err) => {
