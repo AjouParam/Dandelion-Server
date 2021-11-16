@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { basicResponse } = require('../../config/response');
 const { resultResponse } = require('../../config/response');
+const { getKoreanTime } = require('../provider/util');
 require('dotenv').config();
 
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -45,6 +46,7 @@ const account = {
                   name,
                   email,
                   password: hashedPassword,
+                  createdAt: getKoreanTime(),
                 });
                 newUser
                   .save()

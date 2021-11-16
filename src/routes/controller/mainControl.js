@@ -25,7 +25,6 @@ const dandelion = {
     const ExistPositionMessage = await checkAlreadyExist(location.longitude, location.latitude);
     if (ExistPositionMessage) return res.json(basicResponse(ExistPositionMessage));
 
-    console.log(getKoreanTime());
     const newDandelion = new Dandelion({
       name,
       _creator: userId,
@@ -196,6 +195,7 @@ const dandelion = {
       const newVisitHistory = new VisitHistory({
         _user: userId,
         _dandelion: dandelionId,
+        createdAt: getKoreanTime(),
       });
 
       await newVisitHistory.save().catch((err) => {

@@ -24,6 +24,7 @@ const event = {
         type: 'Point',
         coordinates: [location.longitude, location.latitude],
       },
+      createdAt: getKoreanTime(),
       firstComeNum,
       title,
       text,
@@ -183,7 +184,7 @@ const event = {
       {
         text: changedText,
         title: changedTitle,
-        updatedAt: await getKoreanTime(),
+        updatedAt: getKoreanTime(),
         images: images,
         startDate: startDate,
         firstComeNum: firstComeNum,

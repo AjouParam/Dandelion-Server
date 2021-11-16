@@ -39,6 +39,7 @@ const post = {
         type: 'Point',
         coordinates: [location.longitude, location.latitude],
       },
+      createdAt: getKoreanTime(),
       title,
       text,
       images: images,

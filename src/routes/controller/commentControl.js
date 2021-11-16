@@ -165,6 +165,7 @@ const comment = {
         _parentComment: parentCommentId,
         text: text,
         depth: parentComment.depth + 1,
+        createdAt: getKoreanTime(),
       });
       newComment
         .save()
