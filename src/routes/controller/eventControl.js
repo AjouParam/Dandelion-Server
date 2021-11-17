@@ -179,6 +179,8 @@ const event = {
     const checkEventMessage = await checkPost(dandelionId, userId, eventId);
     if (checkEventMessage) return res.json(basicResponse(checkEventMessage));
 
+    if (!images) images = [];
+
     Post.updateOne(
       { _id: eventId, _dandelion: dandelionId },
       {

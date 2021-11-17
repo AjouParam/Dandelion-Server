@@ -276,7 +276,7 @@ const dandelion = {
             name: 1,
             recentImages: {
               $reduce: {
-                input: '$images.images',
+                input: { $ifNull: ['$images.images', []] },
                 initialValue: [],
                 in: { $concatArrays: ['$$value', '$$this'] },
               },

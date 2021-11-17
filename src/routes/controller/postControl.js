@@ -194,6 +194,7 @@ const post = {
     if (checkPostMessage) return res.json(basicResponse(checkPostMessage));
 
     //게시글 location validation
+    if (!images) images = [];
 
     Post.updateOne(
       { _id: postId, _dandelion: dandelionId },
