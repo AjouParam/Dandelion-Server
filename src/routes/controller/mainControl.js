@@ -249,7 +249,7 @@ const dandelion = {
               {
                 $match: {
                   $expr: {
-                    $and: [{ $eq: ['$_dandelion', '$$id'] }, { $gte: [{ $size: '$images' }, 1] }],
+                    $and: [{ $eq: ['$_dandelion', '$$id'] }, { $gte: [{ $size: { $ifNull: ['$images', []] } }, 1] }],
                   },
                 },
               },
