@@ -46,7 +46,10 @@ router.post('/dandelion/getDetail/:dandelionId', verifyToken, dandelion.getDetai
 router.post('/dandelion/visit/:dandelionId', verifyToken, dandelion.visit);
 //민들레 나감
 router.get('/dandelion/exit/:dandelionId', verifyToken, dandelion.exit);
-//민들레 성장, 실시간 방문자 수 부분
+//내 주변 핫스팟
+router.post('/dandelion/get/hotspot/local', verifyToken, dandelion.getLocalHotSpot);
+//전국 핫스팟
+router.post('/dandelion/get/hotspot/national', verifyToken, dandelion.getNationalHotSpot);
 
 //민들레 상세
 //민들레 게시글
@@ -84,6 +87,7 @@ router.get('/dandelion/post/get/mine', verifyToken, myPage.getMyPost);
 router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
 //게시글 이미지 업로드 api
 router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), uploadImages.toPost);
+
 //사용자 프로필 업로드 api
 router.post('/account/images/:destination', verifyToken, upload.array('images', 1), uploadImages.toThumbnail);
 router.post('/mail/create', mail.create);

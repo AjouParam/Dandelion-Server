@@ -313,6 +313,138 @@ const dandelion = {
       return res.json(basicResponse('민들레 나감 모듈에서 에러가 발생하였습니다. ' + err));
     }
   },
+
+  getLocalHotSpot: async (req, res) => {
+    const { currentPosition, maxDistance } = req.body;
+    const page = parseInt(req.query.page);
+    const maxPost = parseInt(req.query.maxPost);
+    const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+
+    if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
+
+    if (!currentPosition || !currentPosition.latitude || !currentPosition.longitude || !maxDistance)
+      return res.json(basicResponse('위치 정보가 누락되었습니다.'));
+
+    await Dandelion.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [currentPosition.longitude, currentPosition.latitude] },
+          spherical: true,
+          distanceField: 'distance',
+          distanceMuliplier: 0.001,
+          query: { level: { $gte: 3 } },
+          maxDistance: maxDistance,
+        },
+      },
+      { $sort: { distance: 1, cumulativeVisitors: -1 } },
+      { $skip: hidePost },
+      { $limit: maxPost },
+      {
+        $lookup: {
+          from: 'posts',
+          as: 'events',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$_dandelion', '$$id'] }, { $eq: ['$isEvent', true] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          description: 1,
+          level: 1,
+          distance: 1,
+          cumulativeVisitors: 1,
+          realTimeVisitors: 1,
+          events: { $size: '$events' },
+          name: 1,
+        },
+      },
+    ])
+      .then((result) => {
+        return res.json(resultResponse('내 주변 민들레 핫스팟입니다.', true, { data: result }));
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('내 주변 민들레 핫스팟을 가져오는 중 에러가 발생하였습니다. ' + error));
+      });
+  },
+  getNationalHotSpot: async (req, res) => {
+    const { currentPosition } = req.body;
+    const page = parseInt(req.query.page);
+    const maxPost = parseInt(req.query.maxPost);
+    const hidePost = page === 1 ? 0 : (page - 1) * maxPost;
+    const maxDistance = 470000000;
+
+    if (!page || !maxPost) return res.json(basicResponse('페이지와 관련된 query parameter가 누락되었습니다.'));
+
+    if (!currentPosition || !currentPosition.latitude || !currentPosition.longitude)
+      return res.json(basicResponse('위치 정보가 누락되었습니다.'));
+
+    await Dandelion.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [currentPosition.longitude, currentPosition.latitude] },
+          spherical: true,
+          distanceField: 'distance',
+          distanceMuliplier: 0.001,
+          query: { level: { $gte: 3 } },
+          maxDistance: maxDistance,
+        },
+      },
+      { $sort: { distance: 1, cumulativeVisitors: -1 } },
+      { $skip: hidePost },
+      { $limit: maxPost },
+      {
+        $lookup: {
+          from: 'posts',
+          as: 'events',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$_dandelion', '$$id'] }, { $eq: ['$isEvent', true] }],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          location: {
+            longitude: { $arrayElemAt: ['$location.coordinates', 0] },
+            latitude: { $arrayElemAt: ['$location.coordinates', 1] },
+          },
+          description: 1,
+          level: 1,
+          distance: 1,
+          cumulativeVisitors: 1,
+          realTimeVisitors: 1,
+          events: { $size: '$events' },
+          name: 1,
+        },
+      },
+    ])
+      .then((result) => {
+        return res.json(resultResponse('내 주변 민들레 핫스팟입니다.', true, { data: result }));
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.json(basicResponse('내 주변 민들레 핫스팟을 가져오는 중 에러가 발생하였습니다. ' + error));
+      });
+  },
 };
 
 module.exports = dandelion;
