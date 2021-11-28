@@ -4,6 +4,7 @@ const express = require('express');
 const { upload } = require('../config/upload');
 const router = express.Router();
 
+const mail = require('./controller/mailControl');
 const account = require('./controller/accountControl');
 const dandelion = require('./controller/mainControl');
 const post = require('./controller/postControl');
@@ -85,4 +86,8 @@ router.post('/dandelion/get/mine', verifyToken, myPage.getMyDandelion);
 router.post('/dandelion/images/:destination', verifyToken, upload.array('images', 10), uploadImages.toPost);
 //사용자 프로필 업로드 api
 router.post('/account/images/:destination', verifyToken, upload.array('images', 1), uploadImages.toThumbnail);
+router.post('/mail/create', mail.create);
+router.post('/mail/load', mail.load);
+router.post('/mail/loadDetail', mail.loadDetail);
+router.post('/mail/save', mail.save);
 module.exports = router;
